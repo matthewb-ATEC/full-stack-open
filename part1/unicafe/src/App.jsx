@@ -24,11 +24,11 @@ const App = () => {
   return (
     <div>
       <h1>give feedback</h1>
-
       <Button text={"good"} onClick={handleGood} />
       <Button text={"nuetral"} onClick={handleNeutral} />
       <Button text={"bad"} onClick={handleBad} />
 
+      <h1>statistics</h1>
       <Statistics good={good} neutral={neutral} bad={bad} />
     </div>
   );
@@ -44,10 +44,10 @@ const Statistics = ({ good, neutral, bad }) => {
   const percent =
     all > 0 ? (neutral + bad === 0 ? 100 : (good / all) * 100) : 0;
 
+  if (all == 0) return <div>No feedback given</div>;
+
   return (
     <>
-      <h1>statistics</h1>
-
       <p>good {good}</p>
       <p>neutral {neutral}</p>
       <p>bad {bad}</p>
