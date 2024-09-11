@@ -14,11 +14,16 @@ const App = () => {
 
   const [selected, setSelected] = useState(0);
   const [points, setPoints] = useState(new Uint8Array(anecdotes.length));
+  const [mostVotesIndex, setMostVotesIndex] = useState(0);
 
   const handleVote = () => {
     const newPoints = [...points];
     newPoints[selected] += 1;
     setPoints(newPoints);
+
+    const maxVotes = Math.max(...newPoints);
+    const indexOfMostVotes = newPoints.indexOf(maxVotes);
+    setMostVotesIndex(indexOfMostVotes);
   };
 
   const handleNext = () => {
@@ -34,10 +39,14 @@ const App = () => {
 
   return (
     <>
+      <h1>Anecdote of the day</h1>
       <div>{anecdotes[selected]}</div>
       <p>Votes {points[selected]}</p>
       <button onClick={handleVote}>vote</button>
       <button onClick={handleNext}>next anecdote</button>
+
+      <h1>Anecdote with most votes</h1>
+      <div>{anecdotes[mostVotesIndex]}</div>
     </>
   );
 };
