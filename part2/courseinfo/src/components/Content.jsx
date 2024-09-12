@@ -1,11 +1,13 @@
 import Part from "./Part";
+import Sum from "./Sum";
 
 const Content = ({ parts }) => {
   return (
     <>
       {parts.map((part, id) => (
-        <Part jey={id} part={part} />
+        <Part key={id} part={part} />
       ))}
+      <Sum parts={parts} />
     </>
   );
 };
