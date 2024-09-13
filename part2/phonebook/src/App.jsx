@@ -42,7 +42,6 @@ const App = () => {
     const newPerson = {
       name: newName,
       number: newNumber,
-      id: persons.length + 1,
     };
 
     // Post the new person using the service and update the state variables
@@ -55,18 +54,29 @@ const App = () => {
   };
 
   const handleNameChange = (event) => {
-    console.log("Name change: ", event.target.value);
+    //console.log("Name change: ", event.target.value);
     setNewName(event.target.value);
   };
 
   const handleNumberChange = (event) => {
-    console.log("Number change: ", event.target.value);
+    //console.log("Number change: ", event.target.value);
     setNewNumber(event.target.value);
   };
 
   const handleSearchChange = (event) => {
-    console.log("Search change: ", event.target.value);
+    //console.log("Search change: ", event.target.value);
     setSearch(event.target.value);
+  };
+
+  const handleDelete = (id) => {
+    console.log("Attempting to delete person with ID:", id);
+    const personToDelete = persons.find((person) => person.id === id);
+
+    if (window.confirm(`Delete ${personToDelete.name} ?`)) {
+      personsService.deleteID(id).then(() => {
+        setPersons(persons.filter((person) => person.id !== id));
+      });
+    }
   };
 
   return (
@@ -87,7 +97,7 @@ const App = () => {
 
       <h3>Persons</h3>
 
-      <Persons persons={filteredPersons} />
+      <Persons persons={filteredPersons} handleDelete={handleDelete} />
     </div>
   );
 };

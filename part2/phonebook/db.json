@@ -19,31 +19,6 @@
       "name": "Mary Poppendieck",
       "number": "39-23-6423122",
       "id": "4"
-    },
-    {
-      "id": 5,
-      "name": "test",
-      "number": "123"
-    },
-    {
-      "id": 6,
-      "name": "testt",
-      "number": "333"
-    },
-    {
-      "id": 7,
-      "name": "cat",
-      "number": "1"
-    },
-    {
-      "id": 8,
-      "name": "new guy",
-      "number": "10101010"
-    },
-    {
-      "id": 9,
-      "name": "another one",
-      "number": "222"
     }
   ]
 }
