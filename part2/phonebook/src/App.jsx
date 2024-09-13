@@ -31,10 +31,28 @@ const App = () => {
     event.preventDefault();
     console.log("Adding new person to phonebook: ", newName, newNumber);
 
-    // Alert and and end submission if the name already exists
+    // Alert and update phone numbers for existing names
     const nameExists = persons.some((person) => person.name === newName);
-    if (nameExists) {
-      alert(`${newName} is already added to phonebook`);
+    if (
+      nameExists &&
+      window.confirm(
+        `${newName} is already added to phonebook, replace old number with a new one?`
+      )
+    ) {
+      const person = persons.find((person) => person.name === newName);
+      const updatedPerson = { ...person, number: newNumber };
+
+      personsService
+        .updateID(updatedPerson.id, updatedPerson)
+        .then((response) => {
+          setPersons(
+            persons.map((person) =>
+              person.id !== response.id ? person : response
+            )
+          );
+          setNewName("");
+          setNewNumber("");
+        });
       return;
     }
 
