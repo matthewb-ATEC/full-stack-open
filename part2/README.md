@@ -51,7 +51,7 @@ import axios from "axios";
 // declare the base url
 const baseURL = "http://localhost:3001/persons";
 
-// declare service functions using GET, POST, PUT, DELETE and more
+// declare service functions using GET, POST, PUT, DELETE and PATCH
 const getAll = () => {
   const request = axios.get(baseURL);
   // Parse the requests to return the data
