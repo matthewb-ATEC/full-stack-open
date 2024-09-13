@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import personsService from "./services/persons";
 import Search from "./components/Search";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
@@ -8,6 +8,8 @@ const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
+
+  // Use to manage seraching and filtering people
   const [search, setSearch] = useState("");
   const filteredPersons =
     search != ""
@@ -16,11 +18,12 @@ const App = () => {
         )
       : persons;
 
+  // Fetch the persons data using the service when the DOM loads
   useEffect(() => {
     console.log("effect");
-    axios.get("http://localhost:3001/persons").then((response) => {
+    personsService.getAll().then((initialPersons) => {
       console.log("promise fulfilled");
-      setPersons(response.data);
+      setPersons(initialPersons);
     });
   }, []);
 
@@ -28,26 +31,27 @@ const App = () => {
     event.preventDefault();
     console.log("Adding new person to phonebook: ", newName, newNumber);
 
+    // Alert and and end submission if the name already exists
     const nameExists = persons.some((person) => person.name === newName);
-
     if (nameExists) {
       alert(`${newName} is already added to phonebook`);
-    } else {
-      const newPerson = {
-        name: newName,
-        number: newNumber,
-        id: persons.length + 1,
-      };
-
-      axios
-        .post("http://localhost:3001/persons", newPerson)
-        .then((response) => {
-          console.log("Post response: ", response);
-          setPersons(persons.concat(response.data));
-          setNewName("");
-          setNewNumber("");
-        });
+      return;
     }
+
+    // Create the new person object
+    const newPerson = {
+      name: newName,
+      number: newNumber,
+      id: persons.length + 1,
+    };
+
+    // Post the new person using the service and update the state variables
+    personsService.create(newPerson).then((returnedPerson) => {
+      console.log("Post response: ", returnedPerson);
+      setPersons(persons.concat(returnedPerson));
+      setNewName("");
+      setNewNumber("");
+    });
   };
 
   const handleNameChange = (event) => {
