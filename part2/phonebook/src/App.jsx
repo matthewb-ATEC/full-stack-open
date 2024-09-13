@@ -9,7 +9,8 @@ const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
-  const [message, setMessage] = useState("test");
+  const [message, setMessage] = useState(null);
+  const [messageStyle, setMessageStyle] = useState(null);
 
   // Use to manage seraching and filtering people
   const [search, setSearch] = useState("");
@@ -52,14 +53,25 @@ const App = () => {
               person.id !== response.id ? person : response
             )
           );
-          setNewName("");
-          setNewNumber("");
 
+          setMessageStyle("success");
           setMessage(`${updatedPerson.name} updated successfully`);
           setTimeout(() => {
             setMessage(null);
           }, 5000);
+        })
+        .catch((error) => {
+          console.log(error);
+          setMessageStyle("error");
+          setMessage(
+            `${updatedPerson.name} has already been removed from the server`
+          );
+          setTimeout(() => {
+            setMessage(null);
+          }, 5000);
         });
+      setNewName("");
+      setNewNumber("");
       return;
     }
 
@@ -70,17 +82,28 @@ const App = () => {
     };
 
     // Post the new person using the service and update the state variables
-    personsService.create(newPerson).then((returnedPerson) => {
-      console.log("Post response: ", returnedPerson);
-      setPersons(persons.concat(returnedPerson));
-      setNewName("");
-      setNewNumber("");
+    personsService
+      .create(newPerson)
+      .then((returnedPerson) => {
+        console.log("Post response: ", returnedPerson);
+        setPersons(persons.concat(returnedPerson));
 
-      setMessage(`${returnedPerson.name} added successfully`);
-      setTimeout(() => {
-        setMessage(null);
-      }, 5000);
-    });
+        setMessageStyle("success");
+        setMessage(`${returnedPerson.name} added successfully`);
+        setTimeout(() => {
+          setMessage(null);
+        }, 5000);
+      })
+      .catch((error) => {
+        console.log(error);
+        setMessageStyle("error");
+        setMessage(`${returnedPerson.name} could not be added`);
+        setTimeout(() => {
+          setMessage(null);
+        }, 5000);
+      });
+    setNewName("");
+    setNewNumber("");
   };
 
   const handleNameChange = (event) => {
@@ -103,9 +126,27 @@ const App = () => {
     const personToDelete = persons.find((person) => person.id === id);
 
     if (window.confirm(`Delete ${personToDelete.name} ?`)) {
-      personsService.deleteID(id).then(() => {
-        setPersons(persons.filter((person) => person.id !== id));
-      });
+      personsService
+        .deleteID(id)
+        .then(() => {
+          setPersons(persons.filter((person) => person.id !== id));
+
+          setMessageStyle("success");
+          setMessage(`${personToDelete.name} has been removed from server`);
+          setTimeout(() => {
+            setMessage(null);
+          }, 5000);
+        })
+        .catch((error) => {
+          console.log(error);
+          setMessageStyle("error");
+          setMessage(
+            `${personToDelete.name} has already been removed from server`
+          );
+          setTimeout(() => {
+            setMessage(null);
+          }, 5000);
+        });
     }
   };
 
@@ -113,7 +154,7 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
 
-      <Notification message={message} />
+      <Notification message={message} messageStyle={messageStyle} />
 
       <Search search={search} handleSearchChange={handleSearchChange} />
 
