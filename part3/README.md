@@ -82,3 +82,11 @@ This will create a /dist directory that can be copied to the backend directory a
 ```javascript
 app.use(express.static("dist"));
 ```
+
+## Steps to connect front and backends
+
+- add cors and static rendering to the backend index.js
+- modify the base url in the frontend service
+- declare the production port in fly.toml and index.js
+- add the deploy and build scripts to the backend package.json
+- set up the proxy in the frontend vite config.
