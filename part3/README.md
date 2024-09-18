@@ -36,19 +36,16 @@ app.listen(PORT, () => {
 
 ## Hosting
 
-There are numerous PaaS (Platform as a Service) options for hosting Node.js web apps. Install Fly.io by executing the following command:
+There are numerous PaaS (Platform as a Service) options for hosting Node.js web apps.
+
+First time?
 
 ```bash
 brew install flyctl
-```
-
-Sign up for an account with:
-
-```bash
 fly auth signup
 ```
 
-Authenticate:
+Already have an account?
 
 ```bash
 fly auth login

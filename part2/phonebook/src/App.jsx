@@ -107,17 +107,17 @@ const App = () => {
   };
 
   const handleNameChange = (event) => {
-    //console.log("Name change: ", event.target.value);
+    console.log("Name change: ", event.target.value);
     setNewName(event.target.value);
   };
 
   const handleNumberChange = (event) => {
-    //console.log("Number change: ", event.target.value);
+    console.log("Number change: ", event.target.value);
     setNewNumber(event.target.value);
   };
 
   const handleSearchChange = (event) => {
-    //console.log("Search change: ", event.target.value);
+    console.log("Search change: ", event.target.value);
     setSearch(event.target.value);
   };
 
