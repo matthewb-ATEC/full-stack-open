@@ -90,3 +90,11 @@ app.use(express.static("dist"));
 - declare the production port in fly.toml and index.js
 - add the deploy and build scripts to the backend package.json
 - set up the proxy in the frontend vite config.
+
+## Environment Variables in Fly.io
+
+Fly.io cannot access the environment variables in the .env file so you must use the following command:
+
+```bash
+fly secrets set VARIABLE=VALUE
+```
