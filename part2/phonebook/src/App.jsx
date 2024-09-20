@@ -86,20 +86,24 @@ const App = () => {
     // Post the new person using the service and update the state variables
     personsService
       .create(newPerson)
-      .then((returnedPerson) => {
-        console.log("Post response: ", returnedPerson);
-        setPersons(persons.concat(returnedPerson));
+      .then((createdPerson) => {
+        console.log("Post response: ", createdPerson);
+        setPersons(persons.concat(createdPerson));
 
         setMessageStyle("success");
-        setMessage(`${returnedPerson.name} added successfully`);
+        setMessage(`${createdPerson.name} added successfully`);
         setTimeout(() => {
           setMessage(null);
         }, 5000);
       })
       .catch((error) => {
-        console.log(error);
+        console.log(
+          error.response?.data?.error || "An error occured while adding"
+        );
         setMessageStyle("error");
-        setMessage(`${returnedPerson.name} could not be added`);
+        setMessage(
+          error.response?.data?.error || "An error occured while adding"
+        );
         setTimeout(() => {
           setMessage(null);
         }, 5000);
