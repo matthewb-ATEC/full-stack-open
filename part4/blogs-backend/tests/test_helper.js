@@ -51,6 +51,13 @@ const initialBlogs = [
   },
 ];
 
+const newBlog = {
+  title: "Type wars",
+  author: "Robert C. Martin",
+  url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+  likes: 2,
+};
+
 const nonExistingId = async () => {
   const blog = new blog({ content: "willremovethissoon" });
   await blog.save();
@@ -66,6 +73,7 @@ const blogsInDb = async () => {
 
 module.exports = {
   initialBlogs,
+  newBlog,
   nonExistingId,
   blogsInDb,
 };
