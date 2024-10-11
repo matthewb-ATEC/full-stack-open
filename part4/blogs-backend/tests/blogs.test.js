@@ -42,6 +42,35 @@ describe("blogs", () => {
     });
   });
 
+  test("creating a new blog increases the number of blogs", async () => {
+    await api
+      .post("/api/blogs")
+      .send(helper.newBlog)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
+
+    const response = await helper.blogsInDb();
+
+    assert.strictEqual(response.length, helper.initialBlogs.length + 1);
+  });
+
+  test("creates new blog posts with accurate information", async () => {
+    const response = await api
+      .post("/api/blogs")
+      .send(helper.newBlog)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
+
+    const responseBlog = {
+      title: response.body.title,
+      author: response.body.author,
+      url: response.body.url,
+      likes: response.body.likes,
+    };
+
+    assert.deepStrictEqual(responseBlog, helper.newBlog);
+  });
+
   after(async () => {
     await mongoose.connection.close();
   });
