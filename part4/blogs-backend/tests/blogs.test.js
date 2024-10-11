@@ -24,6 +24,24 @@ describe("blogs", () => {
     assert.strictEqual(response.body.length, helper.initialBlogs.length);
   });
 
+  test("has a unique identifier property named id", async () => {
+    const response = await api
+      .get("/api/blogs")
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+
+    const blogs = response.body;
+
+    blogs.forEach((blog) => {
+      assert.ok(blog.id, "Blog object does not have an `id` property");
+      assert.strictEqual(
+        typeof blog.id,
+        "string",
+        "`id` is not of type string"
+      );
+    });
+  });
+
   after(async () => {
     await mongoose.connection.close();
   });
