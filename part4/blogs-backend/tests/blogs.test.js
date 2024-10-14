@@ -15,60 +15,92 @@ describe("blogs", () => {
     await Promise.all(promiseArray);
   });
 
-  test("are returned as json", async () => {
-    const response = await api
-      .get("/api/blogs")
-      .expect(200)
-      .expect("Content-Type", /application\/json/);
+  describe("get", () => {
+    test("are returned as json", async () => {
+      const response = await api
+        .get("/api/blogs")
+        .expect(200)
+        .expect("Content-Type", /application\/json/);
 
-    assert.strictEqual(response.body.length, helper.initialBlogs.length);
-  });
+      assert.strictEqual(response.body.length, helper.initialBlogs.length);
+    });
 
-  test("has a unique identifier property named id", async () => {
-    const response = await api
-      .get("/api/blogs")
-      .expect(200)
-      .expect("Content-Type", /application\/json/);
+    test("has a unique identifier property named id", async () => {
+      const response = await api
+        .get("/api/blogs")
+        .expect(200)
+        .expect("Content-Type", /application\/json/);
 
-    const blogs = response.body;
+      const blogs = response.body;
 
-    blogs.forEach((blog) => {
-      assert.ok(blog.id, "Blog object does not have an `id` property");
-      assert.strictEqual(
-        typeof blog.id,
-        "string",
-        "`id` is not of type string"
-      );
+      blogs.forEach((blog) => {
+        assert.ok(blog.id, "Blog object does not have an `id` property");
+        assert.strictEqual(
+          typeof blog.id,
+          "string",
+          "`id` is not of type string"
+        );
+      });
     });
   });
 
-  test("creating a new blog increases the number of blogs", async () => {
-    await api
-      .post("/api/blogs")
-      .send(helper.newBlog)
-      .expect(201)
-      .expect("Content-Type", /application\/json/);
+  describe("post", () => {
+    test("creating a new blog increases the number of blogs", async () => {
+      await api
+        .post("/api/blogs")
+        .send(helper.newBlog)
+        .expect(201)
+        .expect("Content-Type", /application\/json/);
 
-    const response = await helper.blogsInDb();
+      const response = await helper.blogsInDb();
 
-    assert.strictEqual(response.length, helper.initialBlogs.length + 1);
+      assert.strictEqual(response.length, helper.initialBlogs.length + 1);
+    });
+
+    test("creates new blog posts with accurate information", async () => {
+      const response = await api
+        .post("/api/blogs")
+        .send(helper.newBlog)
+        .expect(201)
+        .expect("Content-Type", /application\/json/);
+
+      const responseBlog = {
+        title: response.body.title,
+        author: response.body.author,
+        url: response.body.url,
+        likes: response.body.likes,
+      };
+
+      assert.deepStrictEqual(responseBlog, helper.newBlog);
+    });
   });
 
-  test("creates new blog posts with accurate information", async () => {
-    const response = await api
-      .post("/api/blogs")
-      .send(helper.newBlog)
-      .expect(201)
-      .expect("Content-Type", /application\/json/);
+  describe("delete", () => {
+    test("removing a blog reduces the number of blogs", async () => {
+      const blogs = await helper.blogsInDb();
 
-    const responseBlog = {
-      title: response.body.title,
-      author: response.body.author,
-      url: response.body.url,
-      likes: response.body.likes,
-    };
+      await api.delete(`/api/blogs/${blogs[0].id}`).expect(200);
 
-    assert.deepStrictEqual(responseBlog, helper.newBlog);
+      const response = await helper.blogsInDb();
+
+      assert.strictEqual(response.length, helper.initialBlogs.length - 1);
+    });
+  });
+
+  describe("update", () => {
+    test("the updated blog matches the changes passed to it", async () => {
+      const blogs = await helper.blogsInDb();
+      const blogForUpdate = helper.newBlog;
+
+      const response = await api
+        .put(`/api/blogs/${blogs[0].id}`)
+        .send(blogForUpdate)
+        .expect(200)
+        .expect("Content-Type", /application\/json/);
+
+      const { title, author, url, likes } = response.body;
+      assert.deepStrictEqual({ title, author, url, likes }, blogForUpdate);
+    });
   });
 
   after(async () => {
