@@ -225,3 +225,27 @@ beforeEach(async () => {
   }
 });
 ```
+
+## Users
+
+Users can be stored in a separate collection in the mongo database. Users can reference a list of notes thy've create, notes can reference the user that created them, or both.
+
+### Hashing Passwords
+
+Hash passwords with the following package:
+
+````bash
+npm install brypt
+```
+
+bcrypt is a hashing algorithm thats intentionally slow to counter brute force password crackers.
+
+### Token Authentication
+
+Users will receive a generated token when they login successfully which will be passed along with each request.
+
+Generate tokens with the following package:
+
+```bash
+npm install jsonwebtoken
+````
