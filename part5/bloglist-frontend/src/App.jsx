@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Blog from "./components/Blog";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
+import Notification from "./components/Notification";
 
 const App = () => {
   const [username, setUsername] = useState("");
@@ -12,6 +13,9 @@ const App = () => {
   const [author, setAuthor] = useState("");
   const [url, setUrl] = useState("");
   const [blogs, setBlogs] = useState([]);
+
+  const [messageStyle, setMessageStyle] = useState("");
+  const [message, setMessage] = useState(null);
 
   useEffect(() => {
     blogService.getAll().then((blogs) => {
@@ -42,10 +46,17 @@ const App = () => {
       setUser(user);
       setUsername("");
       setPassword("");
-    } catch (exception) {
-      setErrorMessage("Wrong credentials");
+
+      setMessageStyle("success");
+      setMessage(`successfully logged in`);
       setTimeout(() => {
-        setErrorMessage(null);
+        setMessage(null);
+      }, 5000);
+    } catch (exception) {
+      setMessageStyle("error");
+      setMessage("Wrong username or password");
+      setTimeout(() => {
+        setMessage(null);
       }, 5000);
     }
   };
@@ -53,29 +64,55 @@ const App = () => {
   const handleLogout = () => {
     window.localStorage.removeItem("loggedBlogappUser");
     setUser(null);
+
+    setMessageStyle("success");
+    setMessage(`successfully logged out`);
+    setTimeout(() => {
+      setMessage(null);
+    }, 5000);
   };
 
-  const createBlog = () => {
+  const createBlog = async (event) => {
+    event.preventDefault();
+
     const newBlog = {
       title: title,
       author: author,
       url: url,
     };
 
-    blogService
-      .create(newBlog)
-      .then(() => {
-        setTitle("");
-        setAuthor("");
-        setUrl("");
-      })
-      .catch((error) => next(error));
+    try {
+      const createdBlog = await blogService.create(newBlog);
+
+      setTitle("");
+      setAuthor("");
+      setUrl("");
+
+      setMessageStyle("success");
+      setMessage(
+        `a new blog ${createdBlog.title} by ${createdBlog.author} added`
+      );
+      setTimeout(() => {
+        setMessage(null);
+      }, 5000);
+    } catch (error) {
+      next(error);
+
+      setMessageStyle("error");
+      setMessage(`error adding blog`);
+      setTimeout(() => {
+        setMessage(null);
+      }, 5000);
+    }
   };
 
   if (!user)
     return (
       <div>
         <h2>Log in to application</h2>
+
+        <Notification message={message} messageStyle={messageStyle} />
+
         <form onSubmit={handleLogin}>
           <div>
             <label htmlFor="username">username</label>
@@ -103,6 +140,9 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
+
+      <Notification message={message} messageStyle={messageStyle} />
+
       <div>
         {user.name} logged in
         <button onClick={handleLogout}>logout</button>
