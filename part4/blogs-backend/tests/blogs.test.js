@@ -1,9 +1,11 @@
 const { test, describe, after, beforeEach } = require("node:test");
 const assert = require("node:assert");
 const Blog = require("../models/blog");
+const User = require("../models/user");
 const supertest = require("supertest");
 const mongoose = require("mongoose");
 const helper = require("./test_helper");
+const jwt = require("jsonwebtoken");
 const app = require("../app");
 const api = supertest(app);
 
