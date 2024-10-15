@@ -234,7 +234,7 @@ Users can be stored in a separate collection in the mongo database. Users can re
 
 Hash passwords with the following package:
 
-````bash
+```bash
 npm install brypt
 ```
 
@@ -248,4 +248,4 @@ Generate tokens with the following package:
 
 ```bash
 npm install jsonwebtoken
-````
+```
