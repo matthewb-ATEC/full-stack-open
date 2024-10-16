@@ -1,59 +1,59 @@
-import { useState } from "react";
-import blogsService from "../services/blogs";
+import { useState } from 'react'
+import blogsService from '../services/blogs'
 
 const Blog = ({ blog, setBlogs, blogs, user }) => {
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(false)
 
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
-    border: "solid",
+    border: 'solid',
     borderWidth: 1,
     marginBottom: 5,
-  };
+  }
 
   const increaseLikes = async () => {
     try {
       const updatedBlog = {
         ...blog,
         likes: blog.likes + 1,
-      };
+      }
 
-      const returnedBlog = await blogsService.update(blog.id, updatedBlog);
+      const returnedBlog = await blogsService.update(blog.id, updatedBlog)
 
       // Update the blogs state with the updated blog post
-      setBlogs(blogs.map((b) => (b.id !== blog.id ? b : returnedBlog)));
+      setBlogs(blogs.map((b) => (b.id !== blog.id ? b : returnedBlog)))
     } catch (error) {
-      console.log("Error updating likes: ", error);
+      console.log('Error updating likes: ', error)
     }
-  };
+  }
 
   const deleteBlog = () => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
       try {
-        blogsService.deleteBlog(blog.id);
-        setBlogs(blogs.filter((b) => b.id !== blog.id));
+        blogsService.deleteBlog(blog.id)
+        setBlogs(blogs.filter((b) => b.id !== blog.id))
       } catch (error) {
-        console.log("Error deleting blog", error);
+        console.log('Error deleting blog', error)
       }
     }
-  };
+  }
 
   if (!showDetails)
     return (
       <div style={blogStyle}>
         <div>
-          {blog.title}{" "}
+          {blog.title}{' '}
           <button
             onClick={() => {
-              setShowDetails(true);
+              setShowDetails(true)
             }}
           >
             view
           </button>
         </div>
       </div>
-    );
+    )
 
   return (
     <div style={blogStyle}>
@@ -61,7 +61,7 @@ const Blog = ({ blog, setBlogs, blogs, user }) => {
         {blog.title}
         <button
           onClick={() => {
-            setShowDetails(false);
+            setShowDetails(false)
           }}
         >
           hide
@@ -76,7 +76,7 @@ const Blog = ({ blog, setBlogs, blogs, user }) => {
         <button onClick={deleteBlog}>remove</button>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Blog;
+export default Blog

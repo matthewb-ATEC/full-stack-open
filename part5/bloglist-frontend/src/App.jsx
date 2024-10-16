@@ -1,105 +1,105 @@
-import { useState, useEffect, useRef } from "react";
-import Blog from "./components/Blog";
-import blogService from "./services/blogs";
-import loginService from "./services/login";
-import Notification from "./components/Notification";
-import Togglable from "./components/Togglable";
-import BlogForm from "./components/BlogForm";
+import { useState, useEffect, useRef } from 'react'
+import Blog from './components/Blog'
+import blogService from './services/blogs'
+import loginService from './services/login'
+import Notification from './components/Notification'
+import Togglable from './components/Togglable'
+import BlogForm from './components/BlogForm'
 
 const App = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [user, setUser] = useState(null)
 
-  const [blogs, setBlogs] = useState([]);
-  const blogFormRef = useRef();
+  const [blogs, setBlogs] = useState([])
+  const blogFormRef = useRef()
 
-  const [messageStyle, setMessageStyle] = useState("");
-  const [message, setMessage] = useState(null);
+  const [messageStyle, setMessageStyle] = useState('')
+  const [message, setMessage] = useState(null)
 
   useEffect(() => {
     blogService.getAll().then((blogs) => {
-      setBlogs(blogs);
-    });
-  }, []);
+      setBlogs(blogs)
+    })
+  }, [])
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser");
+    const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
     if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON);
-      setUser(user);
-      blogService.setToken(user.token);
+      const user = JSON.parse(loggedUserJSON)
+      setUser(user)
+      blogService.setToken(user.token)
     }
-  }, []);
+  }, [])
 
   const handleLogin = async (event) => {
-    event.preventDefault();
+    event.preventDefault()
 
     try {
       const user = await loginService.login({
         username,
         password,
-      });
+      })
 
-      window.localStorage.setItem("loggedBlogappUser", JSON.stringify(user));
-      blogService.setToken(user.token);
-      setUser(user);
-      setUsername("");
-      setPassword("");
+      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
+      blogService.setToken(user.token)
+      setUser(user)
+      setUsername('')
+      setPassword('')
 
-      setMessageStyle("success");
-      setMessage(`successfully logged in`);
+      setMessageStyle('success')
+      setMessage('successfully logged in')
       setTimeout(() => {
-        setMessage(null);
-      }, 5000);
+        setMessage(null)
+      }, 5000)
     } catch (exception) {
-      setMessageStyle("error");
-      setMessage("Wrong username or password");
+      setMessageStyle('error')
+      setMessage('Wrong username or password')
       setTimeout(() => {
-        setMessage(null);
-      }, 5000);
+        setMessage(null)
+      }, 5000)
     }
-  };
+  }
 
   const handleLogout = () => {
-    window.localStorage.removeItem("loggedBlogappUser");
-    setUser(null);
+    window.localStorage.removeItem('loggedBlogappUser')
+    setUser(null)
 
-    setMessageStyle("success");
-    setMessage(`successfully logged out`);
+    setMessageStyle('success')
+    setMessage('successfully logged out')
     setTimeout(() => {
-      setMessage(null);
-    }, 5000);
-  };
+      setMessage(null)
+    }, 5000)
+  }
 
   const createBlog = async (newBlog) => {
     try {
-      const createdBlog = await blogService.create(newBlog);
+      const createdBlog = await blogService.create(newBlog)
 
-      blogFormRef.current.toggleVisibility();
-      setBlogs(blogs.concat(createdBlog));
+      blogFormRef.current.toggleVisibility()
+      setBlogs(blogs.concat(createdBlog))
 
-      setMessageStyle("success");
+      setMessageStyle('success')
       setMessage(
         `a new blog ${createdBlog.title} by ${createdBlog.author} added`
-      );
+      )
       setTimeout(() => {
-        setMessage(null);
-      }, 5000);
+        setMessage(null)
+      }, 5000)
     } catch (error) {
-      console.log(error);
+      console.log(error)
 
-      setMessageStyle("error");
-      setMessage(`error adding blog`);
+      setMessageStyle('error')
+      setMessage('error adding blog')
       setTimeout(() => {
-        setMessage(null);
-      }, 5000);
+        setMessage(null)
+      }, 5000)
     }
-  };
+  }
 
   const sortByLikes = (blogOne, blogTwo) => {
-    return blogTwo.likes - blogOne.likes;
-  };
+    return blogTwo.likes - blogOne.likes
+  }
 
   if (!user)
     return (
@@ -130,7 +130,7 @@ const App = () => {
           <button type="submit">login</button>
         </form>
       </div>
-    );
+    )
 
   return (
     <div>
@@ -145,7 +145,7 @@ const App = () => {
 
       <br />
 
-      <Togglable buttonLabel={"new blog"} ref={blogFormRef}>
+      <Togglable buttonLabel={'new blog'} ref={blogFormRef}>
         <BlogForm createBlog={(newBlog) => createBlog(newBlog)} />
       </Togglable>
 
@@ -159,7 +159,7 @@ const App = () => {
         />
       ))}
     </div>
-  );
-};
+  )
+}
 
-export default App;
+export default App
