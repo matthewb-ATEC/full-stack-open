@@ -77,6 +77,7 @@ const App = () => {
       const createdBlog = await blogService.create(newBlog);
 
       blogFormRef.current.toggleVisibility();
+      setBlogs(blogs.concat(createdBlog));
 
       setMessageStyle("success");
       setMessage(

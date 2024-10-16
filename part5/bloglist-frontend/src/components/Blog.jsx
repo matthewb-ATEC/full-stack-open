@@ -28,6 +28,17 @@ const Blog = ({ blog, setBlogs, blogs }) => {
     }
   };
 
+  const deleteBlog = () => {
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
+      try {
+        blogsService.deleteBlog(blog.id);
+        setBlogs(blogs.filter((b) => b.id !== blog.id));
+      } catch (error) {
+        console.log("Error deleting blog", error);
+      }
+    }
+  };
+
   if (!showDetails)
     return (
       <div style={blogStyle}>
@@ -61,6 +72,7 @@ const Blog = ({ blog, setBlogs, blogs }) => {
         likes {blog.likes} <button onClick={increaseLikes}>like</button>
       </div>
       <div>{blog.author}</div>
+      <button onClick={deleteBlog}>remove</button>
     </div>
   );
 };
