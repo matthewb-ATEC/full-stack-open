@@ -1,7 +1,5 @@
-const jwt = require("jsonwebtoken");
 const blogsRouter = require("express").Router();
 const Blog = require("../models/blog");
-const User = require("../models/user");
 
 blogsRouter.get("/", async (request, response) => {
   const blogs = await Blog.find({}).populate("user", { username: 1, name: 1 });
@@ -35,9 +33,26 @@ blogsRouter.delete("/:id", async (request, response) => {
 
 blogsRouter.put("/:id", async (request, response) => {
   const id = request.params.id;
-  const newBlog = request.body;
-  const updatedBlog = await Blog.findByIdAndUpdate(id, newBlog, { new: true });
-  response.status(200).json(updatedBlog);
+
+  const { likes, author, title, url } = request.body;
+
+  // Ensure user is not changed and other fields are updated
+  const blog = await Blog.findById(id);
+
+  if (!blog) {
+    return response.status(404).json({ error: "Blog post not found" });
+  }
+
+  const updatedBlog = {
+    user: blog.user,
+    likes,
+    author,
+    title,
+    url,
+  };
+
+  const result = await Blog.findByIdAndUpdate(id, updatedBlog, { new: true });
+  response.status(200).json(result);
 });
 
 module.exports = blogsRouter;
