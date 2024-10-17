@@ -15,9 +15,10 @@ describe('blog', () => {
       username: 'Username',
       password: 'Password',
     }
-    const mockHandler = vi.fn()
+    const mockUpdateHandler = vi.fn()
+    const mockDeleteHandler = vi.fn()
 
-    render(<Blog blog={blog} setBlogs={mockHandler} blogs={[blog]} user={user}/>)
+    render(<Blog blog={blog} updateBlog={mockUpdateHandler} deleteBlog={mockDeleteHandler} user={user}/>)
 
     screen.getByTestId('blog-element')
   })
@@ -33,9 +34,10 @@ describe('blog', () => {
       username: 'Username',
       password: 'Password',
     }
-    const mockHandler = vi.fn()
+    const mockUpdateHandler = vi.fn()
+    const mockDeleteHandler = vi.fn()
 
-    render(<Blog blog={blog} setBlogs={mockHandler} blogs={[blog]} user={user}/>)
+    render(<Blog blog={blog} updateBlog={mockUpdateHandler} deleteBlog={mockDeleteHandler} user={user}/>)
 
     const element = screen.getByTestId('blog-element')
 
@@ -58,9 +60,10 @@ describe('blog', () => {
       user: user,
     }
 
-    const mockHandler = vi.fn()
+    const mockUpdateHandler = vi.fn()
+    const mockDeleteHandler = vi.fn()
 
-    render(<Blog blog={blog} setBlogs={mockHandler} blogs={[blog]} user={user}/>)
+    render(<Blog blog={blog} updateBlog={mockUpdateHandler} deleteBlog={mockDeleteHandler} user={user}/>)
 
     const element = screen.getByTestId('blog-element')
     const mockUser = userEvent.setup()
@@ -69,5 +72,34 @@ describe('blog', () => {
 
     expect(element).toHaveTextContent(blog.likes)
     expect(element).toHaveTextContent(blog.url)
+  })
+
+  test('handler is called twice when clicking the like button twice', async () => {
+    const user = {
+      username: 'Username',
+      password: 'Password',
+    }
+    const blog = {
+      title: 'Title',
+      author: 'Author',
+      url: 'www.url.com',
+      likes: 0,
+      user: user,
+    }
+
+    const mockUpdateHandler = vi.fn()
+    const mockDeleteHandler = vi.fn()
+
+    render(<Blog blog={blog} updateBlog={mockUpdateHandler} deleteBlog={mockDeleteHandler} user={user}/>)
+
+    const element = screen.getByTestId('blog-element')
+    const mockUser = userEvent.setup()
+    const viewButton = screen.getByText('view')
+    await mockUser.click(viewButton)
+    const likeButton = screen.getByText('like')
+    await mockUser.click(likeButton)
+    await mockUser.click(likeButton)
+
+    expect(mockUpdateHandler.mock.calls).toHaveLength(2)
   })
 })
