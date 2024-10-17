@@ -54,10 +54,19 @@ describe('Blog app', () => {
       })
 
       test('a blog can be liked', async ({ page }) => {
-        await page.pause()
         await page.getByTestId('view-button').click()
         await page.getByTestId('like-button').click()
         await expect(page.getByText('1')).toBeVisible()
+      })
+
+      test('a blog can be delete by the user who created it', async ({ page }) => {
+        await page.pause()
+        await page.getByTestId('view-button').click()
+        page.on('dialog', dialog => dialog.accept())
+        await page.getByTestId('delete-button').click()
+
+
+        await expect(page.getByText(blog.title)).not.toBeVisible()
       })
     })
   })
