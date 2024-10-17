@@ -38,7 +38,7 @@ const Blog = ({ blog, updateBlog, deleteBlog, user }) => {
       <div data-testid='blog-element' style={blogStyle}>
         <div>
           {blog.title} by {blog.author}
-          <button
+          <button data-testid='view-button'
             onClick={() => {
               setShowDetails(true)
             }}
@@ -63,7 +63,7 @@ const Blog = ({ blog, updateBlog, deleteBlog, user }) => {
       </div>
       <div>{blog.url}</div>
       <div>
-        likes {blog.likes} <button onClick={increaseLikes}>like</button>
+        likes {blog.likes} <button data-testid='like-button' onClick={increaseLikes}>like</button>
       </div>
       <div>{blog.author}</div>
       {blog.user.username === user.username && (
