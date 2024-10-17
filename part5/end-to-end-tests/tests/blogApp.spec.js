@@ -59,15 +59,43 @@ describe('Blog app', () => {
         await expect(page.getByText('1')).toBeVisible()
       })
 
-      test('a blog can be delete by the user who created it', async ({ page }) => {
+      test('a blog can be deleted by the user who created it', async ({ page }) => {
         await page.pause()
         await page.getByTestId('view-button').click()
         page.on('dialog', dialog => dialog.accept())
         await page.getByTestId('delete-button').click()
 
-
         await expect(page.getByText(blog.title)).not.toBeVisible()
       })
+    })
+  })
+
+  describe('When logged in with a blog created by a different user', () => {
+    const blog = {
+      title: "a new blog",
+      author: "Author",
+      url: "www.url.com",
+    }
+
+    beforeEach(async ({ page, request }) => {
+      await request.post('/api/users', {
+      data: {
+        name: 'Baz Qux',
+        username: 'username2',
+        password: 'password2'
+      }
+    })
+
+      await loginWith(page, 'username', 'password')
+      await createBlog(page, blog)
+      await page.getByText('logout').click()
+      await loginWith(page, 'username2', 'password2')
+    })
+    
+    test('a blog cannot be deleted by a user who didnt create it', async ({ page }) => {
+      await page.getByTestId('view-button').click()
+      page.on('dialog', dialog => dialog.accept())
+      await expect(page.getByTestId('delete-button')).not.toBeVisible()
     })
   })
 })
