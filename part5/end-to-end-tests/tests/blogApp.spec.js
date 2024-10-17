@@ -37,6 +37,7 @@ describe('Blog app', () => {
       title: "a new blog",
       author: "Author",
       url: "www.url.com",
+      likes: 0,
     }
 
     beforeEach(async ({ page }) => {
@@ -60,12 +61,38 @@ describe('Blog app', () => {
       })
 
       test('a blog can be deleted by the user who created it', async ({ page }) => {
-        await page.pause()
         await page.getByTestId('view-button').click()
         page.on('dialog', dialog => dialog.accept())
         await page.getByTestId('delete-button').click()
 
-        await expect(page.getByText(blog.title)).not.toBeVisible()
+        await expect(page.getByTestId('blog-element').filter({ hasText: blog.title })).not.toBeVisible()
+      })
+    })
+
+    describe('With many blogs', async () => {
+      test('blogs are sorted by likes', async ({ page }) => {
+        for (let i = 0; i < 5; i++)
+        {
+          await createBlog(page, {...blog, title: `Blog ${i}`})
+          await page.getByText(`Blog ${i}`).locator('..').getByTestId('view-button').click()
+          const blogElement = page.getByTestId('blog-element').filter({ hasText: `Blog ${i}` })
+          for (let j = 0; j < i; j++)
+          {
+            await blogElement.getByTestId('like-button').click()
+          }
+        }
+
+        const blogElements = await page.getByTestId('blog-element').all()
+
+        const blogLikes = await Promise.all(
+          blogElements.map(async (element) => {
+            const likeText = await element.getByTestId('like-button').locator('..').innerText() // Adjust based on how the likes are rendered
+            return parseInt(likeText.match(/\d+/)[0], 10) // Extract and convert the number of likes
+          })
+        )
+
+        const sortedLikes = [...blogLikes].sort((a, b) => b - a)
+        expect(blogLikes).toEqual(sortedLikes)
       })
     })
   })
