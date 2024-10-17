@@ -21,7 +21,7 @@ const BlogForm = ({ createBlog }) => {
   }
 
   return (
-    <div data-testid='BlogForm'>
+    <div>
       <h2>create new</h2>
       <form onSubmit={addBlog}>
         <div>
