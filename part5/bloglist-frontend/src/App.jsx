@@ -5,6 +5,7 @@ import loginService from './services/login'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
+import blogsService from '../services/blogs'
 
 const App = () => {
   const [username, setUsername] = useState('')
@@ -97,6 +98,18 @@ const App = () => {
     }
   }
 
+  const updateBlog = async (updatedBlog) => {
+    const returnedBlog = await blogsService.update(updatedBlog.id, updatedBlog)
+
+    // Update the blogs state with the updated blog post
+    setBlogs(blogs.map((blog) => (blog.id !== updatedBlog.id ? blog : returnedBlog)))
+  }
+
+  const deleteBlog = async (blogToDelete) => {
+    blogsService.deleteBlog(blogToDelete.id)
+    setBlogs(blogs.filter((blog) => blog.id !== blogToDelete.id))
+  }
+
   const sortByLikes = (blogOne, blogTwo) => {
     return blogTwo.likes - blogOne.likes
   }
@@ -153,8 +166,8 @@ const App = () => {
         <Blog
           key={blog.id}
           blog={blog}
-          setBlogs={setBlogs}
-          blogs={blogs}
+          updateBlog={(updatedBog) => updateBlog(updatedBog)}
+          deleteBlog={(blogToDelete) => deleteBlog(blogToDelete)}
           user={user}
         />
       ))}
