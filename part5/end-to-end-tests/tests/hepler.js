@@ -4,7 +4,6 @@ const loginWith = async (page, username, password)  => {
   await page.getByRole('button', { name: 'login' }).click()
 }
 
-
 const createBlog = async (page, blog) => {
   await page.getByRole('button', { name: 'new blog' }).click()
   await page.getByTestId('title-input').fill(blog.title)
