@@ -41,9 +41,9 @@ const Blog = ({ blog, setBlogs, blogs, user }) => {
 
   if (!showDetails)
     return (
-      <div style={blogStyle}>
+      <div data-testid='blog-element' style={blogStyle}>
         <div>
-          {blog.title}{' '}
+          {blog.title} by {blog.author}
           <button
             onClick={() => {
               setShowDetails(true)
@@ -56,7 +56,7 @@ const Blog = ({ blog, setBlogs, blogs, user }) => {
     )
 
   return (
-    <div style={blogStyle}>
+    <div data-testid='blog-element' style={blogStyle}>
       <div>
         {blog.title}
         <button
