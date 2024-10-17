@@ -5,7 +5,7 @@ import loginService from './services/login'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
-import blogsService from '../services/blogs'
+import blogsService from './services/blogs'
 
 const App = () => {
   const [username, setUsername] = useState('')
@@ -121,7 +121,7 @@ const App = () => {
 
         <Notification message={message} messageStyle={messageStyle} />
 
-        <form onSubmit={handleLogin}>
+        <form data-testid='LoginForm' onSubmit={handleLogin}>
           <div>
             <label htmlFor="username">username</label>
             <input
