@@ -2,7 +2,7 @@
 
 In this part we return to the frontend, first looking at different possibilities for testing the React code. We will also implement token based authentication which will enable users to log in to our application.
 
-## Children
+## Component Children
 
 Components can wrap other elements and components that are accessible through the prop 'children'.
 
@@ -236,4 +236,221 @@ Assess the range of test coverage by running the following command:
 
 ```bash
 npm test -- --coverage
+```
+
+## End to End Testing
+
+Use Playwright to simulate end to end interaction int he browser.
+
+```bash
+npm install playwright@latest
+```
+
+The installation asks a few questions which can be answered as follows:
+
+```bash
+Do you want ot use TypeScript or JavaScript? (pick based on project)
+Where to put your end-to-end tests? tests
+Add a GitHub Actions workflow? false
+Install Playwright browsers (can be done manually via 'npx playwright install')? true
+```
+
+Your operating system may not support all browsers. You can either specificy targeted browsers in package.json with --project=:
+
+```json
+"test": "playwright test --project=chromium --project=firefox",
+```
+
+Or you can remove problematic browsers from playwright.config.js:
+
+```javascript
+projects: [
+  // ...
+  //{
+  //  name: 'webkit',
+  //  use: { ...devices['Desktop Safari'] },
+  //},
+  // ...
+]
+```
+
+Update package.json to include a script for running tests and test reports as follows:
+
+```json
+{
+  // ...
+  "scripts": {
+    "test": "playwright test",
+    "test:report": "playwright show-report"
+  },
+  // ...
+}
+```
+
+Make an npm script for the backend, which will enable it to be started in testing mode.
+
+```json
+{
+  // ...
+  "scripts": {
+    "start": "NODE_ENV=production node index.js",
+    "dev": "NODE_ENV=development nodemon index.js",
+    "build:ui": "rm -rf build && cd ../frontend/ && npm run build && cp -r build ../backend",
+    "deploy": "fly deploy",
+    "deploy:full": "npm run build:ui && npm run deploy",
+    "logs:prod": "fly logs",
+    "lint": "eslint .",
+    "test": "NODE_ENV=test node --test",
+    "start:test": "NODE_ENV=test node index.js"
+  },
+  // ...
+}
+```
+
+Playwright waits for elements for 5-30 seconds which can slow down test development. Change this in the playwright.config.js:
+
+```javascript
+module.exports = defineConfig({
+  timeout: 3000,
+  fullyParallel: false,
+  workers: 1,
+  // ...
+})
+```
+
+When developing tests you can use playwright's UI mode as follows:
+
+```bash
+npm test -- --ui
+```
+
+### Working with the Database
+
+Access to the database in end to end testing must be integrated by adding a new backend endpoint strictly for testing. The router for the controller may look like this:
+
+```javascript
+const router = require('express').Router()
+const Note = require('../models/note')
+const User = require('../models/user')
+
+router.post('/reset', async (request, response) => {
+  await Note.deleteMany({})
+  await User.deleteMany({})
+
+  response.status(204).end()
+})
+
+module.exports = router
+```
+
+Make sure to only add this router to the backend app when it's run in test-mode:
+
+```javascript
+// ...
+
+app.use('/api/login', loginRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/notes', notesRouter)
+
+
+if (process.env.NODE_ENV === 'test') {
+  const testingRouter = require('./controllers/testing')
+  app.use('/api/testing', testingRouter)
+}
+
+// ...
+
+module.exports = app
+```
+
+When running these end to end tests make sure the backend is running in test mode:
+
+```bash
+  npm run start:test
+```
+
+### Running Tests One by One
+
+```bash
+npm test -- -g "test name here"
+```
+
+### Base URL
+
+Since we have the proxy in the vite.config.js that forwards all requests made by the frontend to http://localhost:5173/api to the backend, we can update our playwright.config.js to use the frontend as our base url.
+
+```javascript
+module.exports = defineConfig({
+  // ...
+  use: {
+    baseURL: 'http://localhost:5173',
+  },
+  // ...
+}
+```
+
+Now the commands that use the base url can be simplified to this:
+
+```javascript
+await page.goto('/')
+await page.post('/api/tests/reset')
+```
+
+### Debugging Tests
+
+Run a test in debug mode as follows:
+
+```bash
+npm test -- -g'test name here' --debug
+```
+
+To execute a test up until a certain point and then start debug mode, add a page.pause() statement when you want to start debugging.
+
+```javascript
+describe('Note app', () => {
+  beforeEach(async ({ page, request }) => {
+    // ...
+  }
+
+  describe('when logged in', () => {
+    beforeEach(async ({ page }) => {
+      // ...
+    })
+
+    describe('and several notes exists', () => {
+      beforeEach(async ({ page }) => {
+        await createNote(page, 'first note')
+        await createNote(page, 'second note')
+        await createNote(page, 'third note')
+      })
+  
+      test('one of those can be made nonimportant', async ({ page }) => {
+
+        await page.pause()
+        const otherNoteText = await page.getByText('second note')
+        const otherNoteElement = await otherNoteText.locator('..')
+      
+        await otherNoteElement.getByRole('button', { name: 'make not important' }).click()
+        await expect(otherNoteElement.getByText('make important')).toBeVisible()
+      })
+    })
+  })
+})
+```
+
+Sometimes the tests interact with the server too quickly and some requests are lost in the process. Wait for the request to finish to prevent this:
+
+```javascript
+const createNote = async (page, content) => {
+  await page.getByRole('button', { name: 'new note' }).click()
+  await page.getByRole('textbox').fill(content)
+  await page.getByRole('button', { name: 'save' }).click()
+  await page.getByText(content).waitFor()
+}
+```
+
+You can log a visual trace of the tset with the following command:
+
+```bash
+npm run test -- --trace on
 ```
