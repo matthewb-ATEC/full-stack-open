@@ -32,7 +32,7 @@ store.dispatch({ type: 'INCREMENT' })
 
 ### Reducers
 
-The impat of the action type is defined using a reducer. Reducers take in the current state and an action and return the new state. Reducers must be pure functions, meaning they return the same value when provided the same parameters.
+The impact of the action type is defined using a reducer. Reducers take in the current state and an action and return the new state. Reducers must be pure functions, meaning they return the same value when provided the same parameters.
 
 ```javascript
 const counterReducer = (state = 0, action) => {
@@ -72,6 +72,165 @@ store.subscribe(() => {
   const storeNow = store.getState()
   console.log(storeNow)
 })
+```
+
+### Action Creators
+
+Functions that create actions are called action creators. These functions can be isolated from react components into their related reducer's file.
+
+```javascript
+// ...
+export const createNote = (content) => {
+  return {
+    type: 'NEW_NOTE',
+    payload: {
+      content,
+      important: false,
+      id: generateId()
+    }
+  }
+}
+
+export const toggleImportanceOf = (id) => {
+  return {
+    type: 'TOGGLE_IMPORTANCE',
+    payload: { id }
+  }
+}
+// ...
+```
+
+### Combined Reducers
+
+As the store of an app becomes more complex, having multiple different state attributes, we want to use many reducers. Combine reducers when creating the store in the main.jsx file:
+
+```javascript
+// ...
+import anecdoteReducer from './reducers/anecdoteReducer'
+import filterReducer from './reducers/filterReducer'
+
+const reducer = combineReducers({
+  anecdotes: anecdoteReducer,
+  filter: filterReducer
+})
+
+const store = createStore(reducer)
+// ...
+```
+
+### Selector and Dispatch
+
+Install the hooks API of the react-redux library to simplify accessing and modifying state:
+
+```bash
+npm install react-redux
+```
+
+Ensure our main.jsx file is providing the store to our app:
+
+```javascript
+import { Provider } from 'react-redux'
+// ...
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <Provider store={store}>
+    <App />
+  </Provider>
+)
+```
+
+Get state attributes as follows:
+
+```javascript
+const anecdotes = useSelector(state => state.anecdotes)
+```
+
+Dispatch action creators as follows:
+
+```javascript
+const dispatch = useDispatch()
+
+const vote = (id) => {
+    dispatch(increaseVotes(id))
+}
+```
+
+## Redux Toolkit
+
+Redux toolkit removes repetitive boilerplate from the standard redux library. 
+
+### Store
+
+With Redux Toolkit main.jsx looks like this:
+
+```javascript
+import ReactDOM from 'react-dom/client'
+import { Provider } from 'react-redux'
+import { configureStore } from '@reduxjs/toolkit'
+import App from './App'
+import noteReducer from './reducers/noteReducer'
+import filterReducer from './reducers/filterReducer'
+
+const store = configureStore({
+  reducer: {
+    notes: noteReducer,
+    filter: filterReducer
+  }
+})
+
+console.log(store.getState())
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <Provider store={store}>
+    <App />
+  </Provider>
+)
+```
+
+### Reducers
+
+With Redux Toolkit reducers look like this:
+
+```javascript
+import { createSlice } from '@reduxjs/toolkit'
+
+// ...
+
+const noteSlice = createSlice({
+  name: 'notes',
+  initialState,
+  reducers: {
+    createNote(state, action) {
+      const content = action.payload
+      state.push({
+        content,
+        important: false,
+        id: generateId(),
+      })
+    },
+    toggleImportanceOf(state, action) {
+      const id = action.payload
+      const noteToChange = state.find(n => n.id === id)
+      const changedNote = { 
+        ...noteToChange, 
+        important: !noteToChange.important 
+      }
+      return state.map(note =>
+        note.id !== id ? note : changedNote 
+      )     
+    }
+  },
+})
+```
+
+### Logging State
+
+Redux Toolkit uses the Immer library to support mutable state, but this causes he output of the state to display in an unreadbale format. Use the current() function to make the output human readbale.
+
+```javascript
+import { createSlice, current } from '@reduxjs/toolkit'
+// ...
+console.log(current(state))
 ```
 
 ## Test Driven Development
@@ -152,7 +311,7 @@ describe('noteReducer', () => {
 })
 ```
 
-## Uncontrolled Form
+## Uncontrolled Forms
 
 Detaching the the state value from form inputs results in an uncontrolled form. Uncontrolled inputs have limitations (for example, dyanmic error messages and disabling the submit button based on certain input).
 
@@ -172,117 +331,3 @@ addNote = (event) => {
   event.target.note.value = ''
 }
 ```
-
-## Action Creators
-
-Functions that create actions are canlled action creators. These functions can be isolated from react components into their related reducer's file.
-
-```javascript
-const noteReducer = (state = [], action) => {
-  // ...
-}
-
-const generateId = () =>
-  Number((Math.random() * 1000000).toFixed(0))
-
-export const createNote = (content) => {
-  return {
-    type: 'NEW_NOTE',
-    payload: {
-      content,
-      important: false,
-      id: generateId()
-    }
-  }
-}
-
-export const toggleImportanceOf = (id) => {
-  return {
-    type: 'TOGGLE_IMPORTANCE',
-    payload: { id }
-  }
-}
-
-export default noteReducer
-```
-
-So now the react component looks like this:
-
-```javascript
-const App = () => {
-  const addNote = (event) => {
-    event.preventDefault()
-    const content = event.target.note.value
-    event.target.note.value = ''
-    store.dispatch(createNote(content))
-    
-  }
-  
-  const toggleImportance = (id) => {
-    store.dispatch(toggleImportanceOf(id))
-  }
-
-  // ...
-}
-```
-
-## Forwarding Redux Store to Components
-
-Install the hooks API of the react-redux library.
-
-```bash
-npm install react-redux
-```
-
-Now our main.jsx file can provide the store to all child components using the Provider:
-
-```javascript
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { createStore } from 'redux'
-
-import { Provider } from 'react-redux'
-
-import App from './App'
-import noteReducer from './reducers/noteReducer'
-
-const store = createStore(noteReducer)
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-
-  <Provider store={store}>
-    <App />
-  </Provider>
-)
-```
-
-Components can access the store using the useSelector and useDispatch hooks.
-
-```javascript
-import { createNote, toggleImportanceOf } from './reducers/noteReducer'
-import { useSelector, useDispatch } from 'react-redux'
-
-const App = () => {
-  const dispatch = useDispatch()
-  const notes = useSelector(state => state)
-
-  const addNote = (event) => {
-    event.preventDefault()
-    const content = event.target.note.value
-    event.target.note.value = ''
-
-    dispatch(createNote(content))
-  }
-
-  const toggleImportance = (id) => {
-    dispatch(toggleImportanceOf(id))
-  }
-
-  return (
-    // ...
-  )
-}
-
-export default App
-```
-
