@@ -233,6 +233,35 @@ import { createSlice, current } from '@reduxjs/toolkit'
 console.log(current(state))
 ```
 
+### Redux Thunk
+
+Use Redux Thunk to define asynchronous reducer behavior. 
+
+```javascript
+// ...
+import noteService from '../services/notes'
+
+const noteSlice = createSlice({
+  name: 'notes',
+  initialState: [],
+  reducers: {
+    // ...
+  },
+})
+
+export const { toggleImportanceOf, appendNote, setNotes } = noteSlice.actions
+
+// This is an example of a Redux Thunk function
+export const initializeNotes = () => {
+  return async dispatch => {
+    const notes = await noteService.getAll()
+    dispatch(setNotes(notes))
+  }
+}
+
+export default noteSlice.reducer
+```
+
 ## Test Driven Development
 
 Install Jest
