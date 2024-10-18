@@ -151,3 +151,138 @@ describe('noteReducer', () => {
   })
 })
 ```
+
+## Uncontrolled Form
+
+Detaching the the state value from form inputs results in an uncontrolled form. Uncontrolled inputs have limitations (for example, dyanmic error messages and disabling the submit button based on certain input).
+
+```javascript
+<form onSubmit={addNote}>
+    <input name="note" /> 
+    <button type="submit">add</button>
+</form>
+```
+
+The value of this field can be accessed as follows:
+
+```javascript
+addNote = (event) => {
+  // ...
+  const content = event.target.note.value
+  event.target.note.value = ''
+}
+```
+
+## Action Creators
+
+Functions that create actions are canlled action creators. These functions can be isolated from react components into their related reducer's file.
+
+```javascript
+const noteReducer = (state = [], action) => {
+  // ...
+}
+
+const generateId = () =>
+  Number((Math.random() * 1000000).toFixed(0))
+
+export const createNote = (content) => {
+  return {
+    type: 'NEW_NOTE',
+    payload: {
+      content,
+      important: false,
+      id: generateId()
+    }
+  }
+}
+
+export const toggleImportanceOf = (id) => {
+  return {
+    type: 'TOGGLE_IMPORTANCE',
+    payload: { id }
+  }
+}
+
+export default noteReducer
+```
+
+So now the react component looks like this:
+
+```javascript
+const App = () => {
+  const addNote = (event) => {
+    event.preventDefault()
+    const content = event.target.note.value
+    event.target.note.value = ''
+    store.dispatch(createNote(content))
+    
+  }
+  
+  const toggleImportance = (id) => {
+    store.dispatch(toggleImportanceOf(id))
+  }
+
+  // ...
+}
+```
+
+## Forwarding Redux Store to Components
+
+Install the hooks API of the react-redux library.
+
+```bash
+npm install react-redux
+```
+
+Now our main.jsx file can provide the store to all child components using the Provider:
+
+```javascript
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { createStore } from 'redux'
+
+import { Provider } from 'react-redux'
+
+import App from './App'
+import noteReducer from './reducers/noteReducer'
+
+const store = createStore(noteReducer)
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+
+  <Provider store={store}>
+    <App />
+  </Provider>
+)
+```
+
+Components can access the store using the useSelector and useDispatch hooks.
+
+```javascript
+import { createNote, toggleImportanceOf } from './reducers/noteReducer'
+import { useSelector, useDispatch } from 'react-redux'
+
+const App = () => {
+  const dispatch = useDispatch()
+  const notes = useSelector(state => state)
+
+  const addNote = (event) => {
+    event.preventDefault()
+    const content = event.target.note.value
+    event.target.note.value = ''
+
+    dispatch(createNote(content))
+  }
+
+  const toggleImportance = (id) => {
+    dispatch(toggleImportanceOf(id))
+  }
+
+  return (
+    // ...
+  )
+}
+
+export default App
+```
+
