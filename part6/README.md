@@ -360,3 +360,80 @@ addNote = (event) => {
   event.target.note.value = ''
 }
 ```
+
+## React Query
+
+React Query maintains the server state in the front end (acts as a cache). Most applications need a way to temporarily store server data (React Query) and to manage the rest of the frontend state (Redux).
+
+To start, install react query:
+
+```bash
+npm install @tanstack/react-query
+```
+
+Modify main.jsx to provide the query client to the app:
+
+```javascript
+// ...
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <QueryClientProvider client={queryClient}>
+    <App />
+  </QueryClientProvider>
+)
+```
+
+### Query Requests
+
+You can retrieve data using the useQuery function. It is good practice to store request functions in a requests.js file:
+
+```javascript
+import axios from 'axios'
+
+export const getNotes = () =>
+  axios.get('http://localhost:3001/notes').then(res => res.data)
+```
+
+The component looks like this:
+
+```javascript
+import { useQuery } from '@tanstack/react-query' 
+import { getNotes } from './requests'
+
+const App = () => {
+  // ...
+  const result = useQuery({
+    queryKey: ['notes'],
+    queryFn: getNotes,
+    // By default, useQuery will execute every time the active element changes, which the following line disables
+    refetchOnWindowFocus: false
+  })
+  // ...
+}
+```
+
+To send data to the server use the useMutation function. 
+
+```javascript
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getNotes, createNote } from './requests'
+
+const App = () => {
+  const queryClient = useQueryClient()
+
+  const newNoteMutation = useMutation({
+    mutationFn: createNote, 
+    /* 
+      By invalidating 'notes' onSuccess the query function associated
+      with the 'notes' key will be executed to fetch the updated data from the server  
+    */
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] })
+    },
+  })
+  // ...
+}
+```
