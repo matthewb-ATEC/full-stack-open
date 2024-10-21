@@ -418,8 +418,8 @@ const App = () => {
 To send data to the server use the useMutation function. 
 
 ```javascript
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getNotes, createNote } from './requests'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { createNote } from './requests'
 
 const App = () => {
   const queryClient = useQueryClient()
@@ -434,6 +434,11 @@ const App = () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] })
     },
   })
+
+  const addNote = async (event) => {
+    // ...
+    newNoteMutation.mutate({ content, important: true })
+  }
   // ...
 }
 ```
