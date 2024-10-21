@@ -5,18 +5,18 @@ const AnecdoteForm = () => {
   const queryClient = useQueryClient()
 
   const newAnecdoteMutation = useMutation({
-      mutationFn: createAnecdote, 
+    mutationFn: createAnecdote, 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['anecdotes'] })
     },
-    })
+  })
 
   const onCreate = async (event) => {
     event.preventDefault()
     const content = event.target.anecdote.value
     event.target.anecdote.value = ''
     newAnecdoteMutation.mutate({content, votes: 0})
-}
+  }
 
   return (
     <div>
