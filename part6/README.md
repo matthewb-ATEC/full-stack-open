@@ -442,3 +442,110 @@ const App = () => {
   // ...
 }
 ```
+
+## React's useReducer
+
+React has a built in reducer hook that work similar to Redux.
+
+```javascript
+import { useReducer } from 'react'
+
+const counterReducer = (state, action) => {
+  switch (action.type) {
+    case "INC":
+        return state + 1
+    // ...
+    default:
+        return state
+  }
+}
+const App = () => {
+  const [counter, counterDispatch] = useReducer(counterReducer, 0)
+
+  return ( 
+    // ...
+  )
+}
+```
+
+## React's useContext
+
+Context can be an effective alternative to prop drilling. Contexts can isolate state into their own files, and provide access through state variables and dispatch functions.
+
+```javascript
+import { createContext, useReducer } from 'react'
+
+const counterReducer = (state, action) => {
+  // ...
+}
+
+const CounterContext = createContext()
+
+// used for getting just the reference to the state variable
+export const useCounterValue = () => {
+  const counterAndDispatch = useContext(CounterContext)
+  return counterAndDispatch[0]
+}
+
+// used for getting just the dispath function
+export const useCounterDispatch = () => {
+  const counterAndDispatch = useContext(CounterContext)
+  return counterAndDispatch[1]
+}
+
+// used to wrap elements that require access to this context's state variable
+export const CounterContextProvider = (props) => {
+  const [counter, counterDispatch] = useReducer(counterReducer, 0)
+
+  return (
+    <CounterContext.Provider value={[counter, counterDispatch] }>
+      {props.children}
+    </CounterContext.Provider>
+  )
+}
+
+export default CounterContext
+```
+
+Example of using this context:
+
+```javascript
+import ReactDOM from 'react-dom/client'
+import App from './App'
+
+import { CounterContextProvider } from './CounterContext'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <CounterContextProvider>
+    <App />
+  </CounterContextProvider>
+)
+```
+
+```javascript
+import { useCounterValue } from '../CounterContext'
+
+const Display = () => {
+  const counter = useCounterValue()
+
+  return <div>{counter}</div>
+}
+
+export default Display
+```
+
+```javascript
+import { useCounterDispatch } from '../CounterContext'
+
+const Button = ({ type, label }) => {
+  const dispatch = useCounterDispatch()
+  
+  return (
+    <button onClick={() => dispatch({ type })}>
+      {label}
+    </button>
+  )
+}
+
+export default Button
+```
