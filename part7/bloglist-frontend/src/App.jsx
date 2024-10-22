@@ -6,6 +6,8 @@ import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import blogsService from './services/blogs'
+import { notifyWithTimeout } from './reducers/notificationReducer'
+import { useDispatch } from 'react-redux'
 
 const App = () => {
   const [username, setUsername] = useState('')
@@ -15,8 +17,7 @@ const App = () => {
   const [blogs, setBlogs] = useState([])
   const blogFormRef = useRef()
 
-  const [messageStyle, setMessageStyle] = useState('')
-  const [message, setMessage] = useState(null)
+  const dispatch = useDispatch()
 
   useEffect(() => {
     blogService.getAll().then((blogs) => {
@@ -48,17 +49,9 @@ const App = () => {
       setUsername('')
       setPassword('')
 
-      setMessageStyle('success')
-      setMessage('successfully logged in')
-      setTimeout(() => {
-        setMessage(null)
-      }, 5000)
+      dispatch(notifyWithTimeout('successfully logged in', 5))
     } catch (exception) {
-      setMessageStyle('error')
-      setMessage('Wrong username or password')
-      setTimeout(() => {
-        setMessage(null)
-      }, 5000)
+      dispatch(notifyWithTimeout('wrong username or password', 5))
     }
   }
 
@@ -66,11 +59,7 @@ const App = () => {
     window.localStorage.removeItem('loggedBlogappUser')
     setUser(null)
 
-    setMessageStyle('success')
-    setMessage('successfully logged out')
-    setTimeout(() => {
-      setMessage(null)
-    }, 5000)
+    dispatch(notifyWithTimeout('successfully logged out', 5))
   }
 
   const createBlog = async (newBlog) => {
@@ -80,21 +69,15 @@ const App = () => {
       blogFormRef.current.toggleVisibility()
       setBlogs(blogs.concat(createdBlog))
 
-      setMessageStyle('success')
-      setMessage(
-        `a new blog ${createdBlog.title} by ${createdBlog.author} added`
+      dispatch(
+        notifyWithTimeout(
+          `a new blog ${createdBlog.title} by ${createdBlog.author} added`,
+          5
+        )
       )
-      setTimeout(() => {
-        setMessage(null)
-      }, 5000)
     } catch (error) {
       console.log(error)
-
-      setMessageStyle('error')
-      setMessage('error adding blog')
-      setTimeout(() => {
-        setMessage(null)
-      }, 5000)
+      dispatch(notifyWithTimeout('error adding blog', 5))
     }
   }
 
@@ -102,7 +85,9 @@ const App = () => {
     const returnedBlog = await blogsService.update(updatedBlog.id, updatedBlog)
 
     // Update the blogs state with the updated blog post
-    setBlogs(blogs.map((blog) => (blog.id !== updatedBlog.id ? blog : returnedBlog)))
+    setBlogs(
+      blogs.map((blog) => (blog.id !== updatedBlog.id ? blog : returnedBlog))
+    )
   }
 
   const deleteBlog = async (blogToDelete) => {
@@ -119,16 +104,16 @@ const App = () => {
       <div>
         <h2>Log in to application</h2>
 
-        <Notification message={message} messageStyle={messageStyle} />
+        <Notification />
 
-        <form data-testid='LoginForm' onSubmit={handleLogin}>
+        <form data-testid="LoginForm" onSubmit={handleLogin}>
           <div>
             <label htmlFor="username">username</label>
             <input
               type="text"
               value={username}
               name="Username"
-              data-testid='username'
+              data-testid="username"
               onChange={({ target }) => setUsername(target.value)}
             />
           </div>
@@ -138,7 +123,7 @@ const App = () => {
               type="password"
               value={password}
               name="Password"
-              data-testid='password'
+              data-testid="password"
               onChange={({ target }) => setPassword(target.value)}
             />
           </div>
@@ -151,7 +136,7 @@ const App = () => {
     <div>
       <h2>blogs</h2>
 
-      <Notification message={message} messageStyle={messageStyle} />
+      <Notification />
 
       <div>
         {user.name} logged in
