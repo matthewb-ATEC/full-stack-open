@@ -13,10 +13,7 @@ npm install react-router-dom
 Establish routes:
 
 ```javascript
-import {
-  BrowserRouter as Router,
-  Routes, Route, Link
-} from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
 const App = () => {
   return (
@@ -33,8 +30,8 @@ const App = () => {
         <Route path="/" element={<Home />} />
       </Routes>
     </Router>
-  )
-}
+  );
+};
 ```
 
 ### Parameterized Route
@@ -42,15 +39,15 @@ const App = () => {
 Use parameters in URLs.
 
 ```javascript
-const Notes = ({notes}) => (
+const Notes = ({ notes }) => (
   <div>
-    {notes.map(note =>
-        <div key={note.id}>
-            <Link to={`/notes/${note.id}`}>{note.content}</Link>
-        </div>
-    )}
+    {notes.map((note) => (
+      <div key={note.id}>
+        <Link to={`/notes/${note.id}`}>{note.content}</Link>
+      </div>
+    ))}
   </div>
-)
+);
 ```
 
 ```javascript
@@ -73,7 +70,7 @@ import {
 
 const Note = ({ notes }) => {
   const id = useParams().id
-  const note = notes.find(n => n.id === Number(id)) 
+  const note = notes.find(n => n.id === Number(id))
   return (
     // ...
   )
@@ -108,7 +105,10 @@ const Login = (props) => {
 Conditionally set the element displayed by a route by replacing the navigation destination:
 
 ```javascript
-<Route path="/users" element={user ? <Users /> : <Navigate replace to="/login" />} />
+<Route
+  path="/users"
+  element={user ? <Users /> : <Navigate replace to="/login" />}
+/>
 ```
 
 ### useMatch
@@ -118,15 +118,15 @@ You can extract parameterized values from the URL and pass the appropriate props
 ```javascript
 import {
   // ...
-  useMatch
-} from 'react-router-dom'
+  useMatch,
+} from "react-router-dom";
 
 const App = () => {
   // ...
-  const match = useMatch('/notes/:id')
+  const match = useMatch("/notes/:id");
   const note = match
-    ? notes.find(note => note.id === Number(match.params.id))
-    : null
+    ? notes.find((note) => note.id === Number(match.params.id))
+    : null;
 
   return (
     <div>
@@ -136,6 +136,49 @@ const App = () => {
         // ...
       </Routes>
     </div>
-  )
-}  
+  );
+};
+```
+
+## Hooks
+
+Hooks are functions typically provided by React that begin with the word 'use'. Exmaples include useState, useEffect, useImperativeHandler, useReducer, useContext, etc. Hooks cannot be used inside of loops or conditional statments. The following ESLint plugin can ensure that hooks are used correctly:
+
+```bash
+npm install eslint-plugin-react-hooks
+```
+
+### Custom Hooks
+
+Building your own Hooks lets you extract component logic into reusable functions.
+
+```javascript
+const useField = (type) => {
+  const [value, setValue] = useState("");
+
+  const onChange = (event) => {
+    setValue(event.target.value);
+  };
+
+  return {
+    type,
+    value,
+    onChange,
+  };
+};
+```
+
+```javascript
+const App = () => {
+  const name = useField("text");
+  // ...
+  return (
+    <div>
+      <form>
+        <input {...name} />
+        // ...
+      </form>
+    </div>
+  );
+};
 ```
