@@ -22,6 +22,7 @@ const BlogForm = ({ blogFormRef }) => {
       author: author,
       url: url,
       likes: 0,
+      comments: [],
     }
 
     try {
