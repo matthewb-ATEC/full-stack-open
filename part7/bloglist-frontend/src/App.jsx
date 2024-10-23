@@ -5,7 +5,10 @@ import blogsService from './services/blogs'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
-import { notifyWithTimeout } from './reducers/notificationReducer'
+import {
+  notifyWithTimeout,
+  setNotificationStyle,
+} from './reducers/notificationReducer'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   createBlog,
@@ -56,8 +59,10 @@ const App = () => {
       setUsername('')
       setPassword('')
 
+      dispatch(setNotificationStyle('success'))
       dispatch(notifyWithTimeout('successfully logged in', 5))
     } catch (exception) {
+      dispatch(setNotificationStyle('error'))
       dispatch(notifyWithTimeout('wrong username or password', 5))
     }
   }
@@ -65,7 +70,7 @@ const App = () => {
   const handleLogout = () => {
     window.localStorage.removeItem('loggedBlogappUser')
     dispatch(clearUser())
-
+    dispatch(setNotificationStyle('success'))
     dispatch(notifyWithTimeout('successfully logged out', 5))
   }
 
@@ -74,7 +79,7 @@ const App = () => {
       const createdBlog = await blogsService.create(newBlog)
       blogFormRef.current.toggleVisibility()
       dispatch(createBlog(createdBlog))
-
+      dispatch(setNotificationStyle('success'))
       dispatch(
         notifyWithTimeout(
           `a new blog ${createdBlog.title} by ${createdBlog.author} added`,
@@ -83,6 +88,7 @@ const App = () => {
       )
     } catch (error) {
       console.log(error)
+      dispatch(setNotificationStyle('error'))
       dispatch(notifyWithTimeout('error adding blog', 5))
     }
   }
