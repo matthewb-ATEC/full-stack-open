@@ -35,10 +35,11 @@ const Blog = ({ blog, updateBlog, deleteBlog, user }) => {
 
   if (!showDetails)
     return (
-      <div data-testid='blog-element' style={blogStyle}>
+      <div data-testid="blog-element" style={blogStyle}>
         <div>
           {blog.title} by {blog.author}
-          <button data-testid='view-button'
+          <button
+            data-testid="view-button"
             onClick={() => {
               setShowDetails(true)
             }}
@@ -50,7 +51,7 @@ const Blog = ({ blog, updateBlog, deleteBlog, user }) => {
     )
 
   return (
-    <div data-testid='blog-element' style={blogStyle}>
+    <div data-testid="blog-element" style={blogStyle}>
       <div>
         {blog.title}
         <button
@@ -63,11 +64,16 @@ const Blog = ({ blog, updateBlog, deleteBlog, user }) => {
       </div>
       <div>{blog.url}</div>
       <div>
-        likes {blog.likes} <button data-testid='like-button' onClick={increaseLikes}>like</button>
+        likes {blog.likes}{' '}
+        <button data-testid="like-button" onClick={increaseLikes}>
+          like
+        </button>
       </div>
       <div>{blog.author}</div>
       {blog.user.username === user.username && (
-        <button data-testid='delete-button' onClick={removeBlog}>remove</button>
+        <button data-testid="delete-button" onClick={removeBlog}>
+          remove
+        </button>
       )}
     </div>
   )
