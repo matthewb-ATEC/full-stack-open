@@ -5,15 +5,19 @@ const notificationSlice = createSlice({
   initialState: '',
   reducers: {
     setNotification(state, action) {
-      return action.payload
+      return { ...state, message: action.payload }
     },
-    removeNotification() {
-      return ''
+    removeNotification(state, action) {
+      return { ...state, message: '' }
+    },
+    setNotificationStyle(state, action) {
+      return { ...state, style: action.payload }
     },
   },
 })
 
-export const { setNotification, removeNotification } = notificationSlice.actions
+export const { setNotification, removeNotification, setNotificationStyle } =
+  notificationSlice.actions
 
 let timeoutId
 export const notifyWithTimeout = (message, timeInSeconds = 5) => {
