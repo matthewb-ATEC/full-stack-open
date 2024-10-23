@@ -8,13 +8,17 @@ import {
 } from './reducers/notificationReducer'
 import { useDispatch, useSelector } from 'react-redux'
 import { clearUser, setUser } from './reducers/userReducer'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useMatch } from 'react-router-dom'
 import BlogList from './components/BlogList'
 import Users from './components/Users'
+import User from './components/User'
+import { setUsers } from './reducers/usersReducer'
+import usersService from './services/users'
 
 const App = () => {
   const dispatch = useDispatch()
 
+  const users = useSelector((state) => state.users)
   const user = useSelector((state) => state.user)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -26,6 +30,14 @@ const App = () => {
       dispatch(setUser(user))
       blogsService.setToken(user.token)
     }
+  }, [])
+
+  useEffect(() => {
+    const getUsers = async () => {
+      const users = await usersService.get()
+      dispatch(setUsers(users))
+    }
+    getUsers()
   }, [])
 
   const handleLogin = async (event) => {
@@ -58,6 +70,10 @@ const App = () => {
     dispatch(setNotificationStyle('success'))
     dispatch(notifyWithTimeout('successfully logged out', 5))
   }
+
+  const match = useMatch('/users/:id')
+  const selectedUser =
+    match && users ? users.find((u) => u.id === match.params.id) : null
 
   if (!user)
     return (
@@ -92,6 +108,11 @@ const App = () => {
       </div>
     )
 
+  // Check if users is still undefined
+  if (!users || users.length === 0) {
+    return <div>Loading users...</div>
+  }
+
   return (
     <div>
       <h2>blogs</h2>
@@ -108,6 +129,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<BlogList />} />
         <Route path="/users" element={<Users />} />
+        <Route path="/users/:id" element={<User user={selectedUser} />} />
       </Routes>
     </div>
   )
