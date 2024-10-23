@@ -1,19 +1,45 @@
 import PropTypes from 'prop-types'
 import { useState } from 'react'
+import {
+  notifyWithTimeout,
+  setNotificationStyle,
+} from '../reducers/notificationReducer'
+import { createBlog } from '../reducers/blogsReducer'
+import blogsService from '../services/blogs'
+import { useDispatch } from 'react-redux'
 
-const BlogForm = ({ createBlog }) => {
+const BlogForm = ({ blogFormRef }) => {
+  const dispatch = useDispatch()
+
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [url, setUrl] = useState('')
 
-  const addBlog = (event) => {
+  const addBlog = async (event) => {
     event.preventDefault()
-    createBlog({
+    const blog = {
       title: title,
       author: author,
       url: url,
       likes: 0,
-    })
+    }
+
+    try {
+      const createdBlog = await blogsService.create(blog)
+      blogFormRef.current.toggleVisibility()
+      dispatch(createBlog(createdBlog))
+      dispatch(setNotificationStyle('success'))
+      dispatch(
+        notifyWithTimeout(
+          `a new blog ${createdBlog.title} by ${createdBlog.author} added`,
+          5
+        )
+      )
+    } catch (error) {
+      console.log(error)
+      dispatch(setNotificationStyle('error'))
+      dispatch(notifyWithTimeout('error adding blog', 5))
+    }
 
     setTitle('')
     setAuthor('')
@@ -27,7 +53,7 @@ const BlogForm = ({ createBlog }) => {
         <div>
           title:
           <input
-            data-testid='title-input'
+            data-testid="title-input"
             type="text"
             value={title}
             name="title"
@@ -37,7 +63,7 @@ const BlogForm = ({ createBlog }) => {
         <div>
           author:
           <input
-            data-testid='author-input'
+            data-testid="author-input"
             type="text"
             value={author}
             name="author"
@@ -47,21 +73,19 @@ const BlogForm = ({ createBlog }) => {
         <div>
           url:
           <input
-            data-testid='url-input'
+            data-testid="url-input"
             type="text"
             value={url}
             name="url"
             onChange={({ target }) => setUrl(target.value)}
           />
         </div>
-        <button data-testid='create-button' type="submit">create</button>
+        <button data-testid="create-button" type="submit">
+          create
+        </button>
       </form>
     </div>
   )
-}
-
-BlogForm.propTypes = {
-  createBlog: PropTypes.func.isRequired
 }
 
 export default BlogForm
