@@ -7,7 +7,12 @@ import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import { notifyWithTimeout } from './reducers/notificationReducer'
 import { useDispatch, useSelector } from 'react-redux'
-import { createBlog, removeBlog, setBlogs } from './reducers/blogsReducer'
+import {
+  createBlog,
+  removeBlog,
+  updateBlog,
+  setBlogs,
+} from './reducers/blogsReducer'
 import { clearUser, setUser } from './reducers/userReducer'
 
 const App = () => {
@@ -82,13 +87,13 @@ const App = () => {
     }
   }
 
-  const updateBlog = async (updatedBlog) => {
+  const changeBlog = async (updatedBlog) => {
     const blog = await blogsService.update(updatedBlog.id, updatedBlog)
     dispatch(updateBlog(blog))
   }
 
   const deleteBlog = async (blogToDelete) => {
-    blogsService.deleteBlog(blogToDelete)
+    blogsService.deleteBlog(blogToDelete.id)
     dispatch(removeBlog(blogToDelete))
   }
 
@@ -129,7 +134,6 @@ const App = () => {
       </div>
     )
 
-  console.log(blogs)
   return (
     <div>
       <h2>blogs</h2>
@@ -151,7 +155,7 @@ const App = () => {
         <Blog
           key={blog.id}
           blog={blog}
-          updateBlog={(updatedBog) => updateBlog(updatedBog)}
+          updateBlog={(updatedBog) => changeBlog(updatedBog)}
           deleteBlog={(blogToDelete) => deleteBlog(blogToDelete)}
           user={user}
         />
