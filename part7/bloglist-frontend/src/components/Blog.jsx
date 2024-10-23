@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 
-const Blog = ({ blog, updateBlog, deleteBlog, user }) => {
+const Blog = ({ blog, updateBlog, deleteBlog }) => {
+  const user = useSelector((state) => state.user)
   const [showDetails, setShowDetails] = useState(false)
 
   const blogStyle = {

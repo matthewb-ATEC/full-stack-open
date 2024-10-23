@@ -1,22 +1,16 @@
-import { useState, useEffect, useRef } from 'react'
-import Blog from './components/Blog'
+import { useState, useEffect } from 'react'
 import loginService from './services/login'
 import blogsService from './services/blogs'
 import Notification from './components/Notification'
-import Togglable from './components/Togglable'
-import BlogForm from './components/BlogForm'
 import {
   notifyWithTimeout,
   setNotificationStyle,
 } from './reducers/notificationReducer'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  createBlog,
-  removeBlog,
-  updateBlog,
-  setBlogs,
-} from './reducers/blogsReducer'
 import { clearUser, setUser } from './reducers/userReducer'
+import { Routes, Route } from 'react-router-dom'
+import BlogList from './components/BlogList'
+import Users from './components/Users'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -24,15 +18,6 @@ const App = () => {
   const user = useSelector((state) => state.user)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-
-  const blogs = useSelector((state) => state.blogs)
-  const blogFormRef = useRef()
-
-  useEffect(() => {
-    blogsService.getAll().then((blogs) => {
-      dispatch(setBlogs(blogs))
-    })
-  }, [])
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
@@ -72,39 +57,6 @@ const App = () => {
     dispatch(clearUser())
     dispatch(setNotificationStyle('success'))
     dispatch(notifyWithTimeout('successfully logged out', 5))
-  }
-
-  const newBlog = async (newBlog) => {
-    try {
-      const createdBlog = await blogsService.create(newBlog)
-      blogFormRef.current.toggleVisibility()
-      dispatch(createBlog(createdBlog))
-      dispatch(setNotificationStyle('success'))
-      dispatch(
-        notifyWithTimeout(
-          `a new blog ${createdBlog.title} by ${createdBlog.author} added`,
-          5
-        )
-      )
-    } catch (error) {
-      console.log(error)
-      dispatch(setNotificationStyle('error'))
-      dispatch(notifyWithTimeout('error adding blog', 5))
-    }
-  }
-
-  const changeBlog = async (updatedBlog) => {
-    const blog = await blogsService.update(updatedBlog.id, updatedBlog)
-    dispatch(updateBlog(blog))
-  }
-
-  const deleteBlog = async (blogToDelete) => {
-    blogsService.deleteBlog(blogToDelete.id)
-    dispatch(removeBlog(blogToDelete))
-  }
-
-  const sortByLikes = (blogOne, blogTwo) => {
-    return blogTwo.likes - blogOne.likes
   }
 
   if (!user)
@@ -153,19 +105,10 @@ const App = () => {
 
       <br />
 
-      <Togglable buttonLabel={'new blog'} ref={blogFormRef}>
-        <BlogForm createBlog={(blog) => newBlog(blog)} />
-      </Togglable>
-
-      {[...blogs].sort(sortByLikes).map((blog) => (
-        <Blog
-          key={blog.id}
-          blog={blog}
-          updateBlog={(updatedBog) => changeBlog(updatedBog)}
-          deleteBlog={(blogToDelete) => deleteBlog(blogToDelete)}
-          user={user}
-        />
-      ))}
+      <Routes>
+        <Route path="/" element={<BlogList />} />
+        <Route path="/users" element={<Users />} />
+      </Routes>
     </div>
   )
 }
