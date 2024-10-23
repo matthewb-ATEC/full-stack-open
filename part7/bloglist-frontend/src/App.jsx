@@ -14,6 +14,8 @@ import Users from './components/Users'
 import User from './components/User'
 import { setUsers } from './reducers/usersReducer'
 import usersService from './services/users'
+import BlogView from './components/BlogView'
+import { setBlogs } from './reducers/blogsReducer'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -22,6 +24,8 @@ const App = () => {
   const user = useSelector((state) => state.user)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+
+  const blogs = useSelector((state) => state.blogs)
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
@@ -38,6 +42,14 @@ const App = () => {
       dispatch(setUsers(users))
     }
     getUsers()
+  }, [])
+
+  useEffect(() => {
+    const getBlogs = async () => {
+      const blogs = await blogsService.getAll()
+      dispatch(setBlogs(blogs))
+    }
+    getBlogs()
   }, [])
 
   const handleLogin = async (event) => {
@@ -71,9 +83,13 @@ const App = () => {
     dispatch(notifyWithTimeout('successfully logged out', 5))
   }
 
-  const match = useMatch('/users/:id')
+  const userMatch = useMatch('/users/:id')
   const selectedUser =
-    match && users ? users.find((u) => u.id === match.params.id) : null
+    userMatch && users ? users.find((u) => u.id === userMatch.params.id) : null
+
+  const blogMatch = useMatch('/blogs/:id')
+  const selectedBlog =
+    blogMatch && blogs ? blogs.find((b) => b.id === blogMatch.params.id) : null
 
   if (!user)
     return (
@@ -113,23 +129,27 @@ const App = () => {
     return <div>Loading users...</div>
   }
 
+  // Check if blogs is still undefined
+  if (!blogs || blogs.length === 0) {
+    return <div>Loading blogs...</div>
+  }
+
   return (
     <div>
       <h2>blogs</h2>
 
       <Notification />
 
-      <div>
-        {user.name} logged in
-        <button onClick={handleLogout}>logout</button>
-      </div>
-
+      <div>{user.name} logged in</div>
       <br />
+      <button onClick={handleLogout}>logout</button>
 
       <Routes>
         <Route path="/" element={<BlogList />} />
+        <Route path="/blogs" element={<BlogList />} />
         <Route path="/users" element={<Users />} />
         <Route path="/users/:id" element={<User user={selectedUser} />} />
+        <Route path="/blogs/:id" element={<BlogView blog={selectedBlog} />} />
       </Routes>
     </div>
   )

@@ -1,9 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-const generateId = () => {
-  return Math.floor(Math.random(1000) * 1000)
-}
-
 const blogsSlice = createSlice({
   name: 'blogs',
   initialState: [],
@@ -12,7 +8,7 @@ const blogsSlice = createSlice({
       return action.payload
     },
     createBlog(state, action) {
-      return [...state, { ...action.payload, id: generateId() }]
+      return [...state, { ...action.payload }]
     },
     updateBlog(state, action) {
       return state.map((blog) =>
