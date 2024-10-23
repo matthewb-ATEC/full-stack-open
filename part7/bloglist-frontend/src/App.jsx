@@ -7,7 +7,7 @@ import {
   setNotificationStyle,
 } from './reducers/notificationReducer'
 import { useDispatch, useSelector } from 'react-redux'
-import { clearUser, setUser } from './reducers/userReducer'
+import { setUser } from './reducers/userReducer'
 import { Routes, Route, useMatch } from 'react-router-dom'
 import BlogList from './components/BlogList'
 import Users from './components/Users'
@@ -16,6 +16,7 @@ import { setUsers } from './reducers/usersReducer'
 import usersService from './services/users'
 import BlogView from './components/BlogView'
 import { setBlogs } from './reducers/blogsReducer'
+import Navbar from './components/Navbar'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -76,13 +77,6 @@ const App = () => {
     }
   }
 
-  const handleLogout = () => {
-    window.localStorage.removeItem('loggedBlogappUser')
-    dispatch(clearUser())
-    dispatch(setNotificationStyle('success'))
-    dispatch(notifyWithTimeout('successfully logged out', 5))
-  }
-
   const userMatch = useMatch('/users/:id')
   const selectedUser =
     userMatch && users ? users.find((u) => u.id === userMatch.params.id) : null
@@ -136,13 +130,10 @@ const App = () => {
 
   return (
     <div>
+      <Navbar />
       <h2>blogs</h2>
 
       <Notification />
-
-      <div>{user.name} logged in</div>
-      <br />
-      <button onClick={handleLogout}>logout</button>
 
       <Routes>
         <Route path="/" element={<BlogList />} />
