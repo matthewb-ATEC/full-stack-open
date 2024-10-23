@@ -289,12 +289,7 @@ const Login = (props) => {
 Notifications:
 
 ```javascript
-import { Container } from "@mui/material";
-
-const App = () => {
-  // ...
-  return <Container>// ...</Container>;
-};
+<Alert variant="success">{message}</Alert>
 ```
 
 Navigation:

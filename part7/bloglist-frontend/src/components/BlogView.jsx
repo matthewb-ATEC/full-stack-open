@@ -3,6 +3,17 @@ import blogsService from '../services/blogs'
 import { removeBlog, updateBlog } from '../reducers/blogsReducer'
 import { useNavigate } from 'react-router-dom'
 import commentsService from '../services/comments'
+import {
+  Button,
+  Typography,
+  Link,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  TextField,
+  Box,
+} from '@mui/material'
 
 const BlogView = ({ blog }) => {
   const navigate = useNavigate()
@@ -38,6 +49,7 @@ const BlogView = ({ blog }) => {
   }
 
   const handleAddComment = async (event) => {
+    event.preventDefault()
     const comment = {
       comment: event.target.comment.value,
     }
@@ -48,40 +60,51 @@ const BlogView = ({ blog }) => {
   if (!blog) return null
 
   return (
-    <div data-testid="blog-element">
-      <h1>
+    <Paper elevation={3} sx={{ padding: 3, margin: 3 }}>
+      <Typography variant="h4" gutterBottom>
         {blog.title} {blog.author}
-      </h1>
-      <a href={blog.url} target="blank ">
+      </Typography>
+      <Link href={blog.url} target="_blank" rel="noopener">
         {blog.url}
-      </a>
-      <div>
-        {blog.likes} likes
-        <button data-testid="like-button" onClick={increaseLikes}>
+      </Link>
+      <Box sx={{ display: 'flex', alignItems: 'center', margin: 2 }}>
+        <Typography variant="body1" sx={{ marginRight: 2 }}>
+          {blog.likes} likes
+        </Typography>
+        <Button variant="contained" color="primary" onClick={increaseLikes}>
           like
-        </button>
-      </div>
+        </Button>
+      </Box>
       {blog.user.username === user.username ? (
-        <button data-testid="delete-button" onClick={deleteBlog}>
+        <Button variant="contained" color="secondary" onClick={deleteBlog}>
           remove
-        </button>
+        </Button>
       ) : (
-        <div>added by {blog.author}</div>
+        <Typography variant="body2">added by {blog.author}</Typography>
       )}
-      <br />
-      <div>
-        <h3>comments</h3>
+      <Box sx={{ marginTop: 3 }}>
+        <Typography variant="h6">comments</Typography>
         <form onSubmit={handleAddComment}>
-          <input name="comment" />
-          <button>add comment</button>
+          <TextField
+            name="comment"
+            label="Add a comment"
+            variant="outlined"
+            size="small"
+            sx={{ marginRight: 1 }}
+          />
+          <Button type="submit" variant="contained" color="primary">
+            add comment
+          </Button>
         </form>
-        <ul>
+        <List>
           {blog.comments.map((comment) => (
-            <li key={comment.id}>{comment.comment}</li>
+            <ListItem key={comment.id}>
+              <ListItemText primary={comment.comment} />
+            </ListItem>
           ))}
-        </ul>
-      </div>
-    </div>
+        </List>
+      </Box>
+    </Paper>
   )
 }
 

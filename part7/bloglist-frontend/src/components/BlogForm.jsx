@@ -7,6 +7,7 @@ import {
 import { createBlog } from '../reducers/blogsReducer'
 import blogsService from '../services/blogs'
 import { useDispatch } from 'react-redux'
+import { Box, Button, TextField, Typography } from '@mui/material'
 
 const BlogForm = ({ blogFormRef }) => {
   const dispatch = useDispatch()
@@ -48,44 +49,54 @@ const BlogForm = ({ blogFormRef }) => {
   }
 
   return (
-    <div>
-      <h2>create new</h2>
+    <Box sx={{ padding: 2, border: '1px solid #ccc', borderRadius: 1 }}>
+      <Typography variant="h5" gutterBottom>
+        Create New Blog
+      </Typography>
       <form onSubmit={addBlog}>
-        <div>
-          title:
-          <input
+        <Box sx={{ mb: 2 }}>
+          <TextField
             data-testid="title-input"
-            type="text"
+            label="Title"
+            variant="outlined"
+            fullWidth
             value={title}
             name="title"
             onChange={({ target }) => setTitle(target.value)}
           />
-        </div>
-        <div>
-          author:
-          <input
+        </Box>
+        <Box sx={{ mb: 2 }}>
+          <TextField
             data-testid="author-input"
-            type="text"
+            label="Author"
+            variant="outlined"
+            fullWidth
             value={author}
             name="author"
             onChange={({ target }) => setAuthor(target.value)}
           />
-        </div>
-        <div>
-          url:
-          <input
+        </Box>
+        <Box sx={{ mb: 2 }}>
+          <TextField
             data-testid="url-input"
-            type="text"
+            label="URL"
+            variant="outlined"
+            fullWidth
             value={url}
             name="url"
             onChange={({ target }) => setUrl(target.value)}
           />
-        </div>
-        <button data-testid="create-button" type="submit">
-          create
-        </button>
+        </Box>
+        <Button
+          data-testid="create-button"
+          variant="contained"
+          color="primary"
+          type="submit"
+        >
+          Create
+        </Button>
       </form>
-    </div>
+    </Box>
   )
 }
 
