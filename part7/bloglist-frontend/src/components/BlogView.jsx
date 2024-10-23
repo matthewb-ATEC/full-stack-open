@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import blogsService from '../services/blogs'
 import { removeBlog, updateBlog } from '../reducers/blogsReducer'
 import { useNavigate } from 'react-router-dom'
+import commentsService from '../services/comments'
 
 const BlogView = ({ blog }) => {
   const navigate = useNavigate()
@@ -36,6 +37,14 @@ const BlogView = ({ blog }) => {
     }
   }
 
+  const handleAddComment = async (event) => {
+    const comment = {
+      comment: event.target.comment.value,
+    }
+    const updatedBlog = await commentsService.create(blog.id, comment)
+    dispatch(updateBlog(updatedBlog))
+  }
+
   if (!blog) return null
 
   return (
@@ -62,6 +71,10 @@ const BlogView = ({ blog }) => {
       <br />
       <div>
         <h3>comments</h3>
+        <form onSubmit={handleAddComment}>
+          <input name="comment" />
+          <button>add comment</button>
+        </form>
         <ul>
           {blog.comments.map((comment) => (
             <li key={comment.id}>{comment.comment}</li>
