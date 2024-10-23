@@ -17,6 +17,7 @@ import usersService from './services/users'
 import BlogView from './components/BlogView'
 import { setBlogs } from './reducers/blogsReducer'
 import Navbar from './components/Navbar'
+import { Button, Container, TextField } from '@mui/material'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -87,35 +88,31 @@ const App = () => {
 
   if (!user)
     return (
-      <div>
+      <Container>
         <h2>Log in to application</h2>
 
         <Notification />
 
         <form data-testid="LoginForm" onSubmit={handleLogin}>
-          <div>
-            <label htmlFor="username">username</label>
-            <input
-              type="text"
-              value={username}
-              name="Username"
-              data-testid="username"
-              onChange={({ target }) => setUsername(target.value)}
-            />
-          </div>
-          <div>
-            <label htmlFor="password">password</label>
-            <input
-              type="password"
-              value={password}
-              name="Password"
-              data-testid="password"
-              onChange={({ target }) => setPassword(target.value)}
-            />
-          </div>
-          <button type="submit">login</button>
+          <TextField
+            label="username"
+            type="text"
+            value={username}
+            name="Username"
+            data-testid="username"
+            onChange={({ target }) => setUsername(target.value)}
+          />
+          <TextField
+            label="password"
+            type="password"
+            value={password}
+            name="Password"
+            data-testid="password"
+            onChange={({ target }) => setPassword(target.value)}
+          />
+          <Button type="submit">login</Button>
         </form>
-      </div>
+      </Container>
     )
 
   // Check if users is still undefined
@@ -129,7 +126,7 @@ const App = () => {
   }
 
   return (
-    <div>
+    <Container>
       <Navbar />
       <h2>blogs</h2>
 
@@ -142,7 +139,7 @@ const App = () => {
         <Route path="/users/:id" element={<User user={selectedUser} />} />
         <Route path="/blogs/:id" element={<BlogView blog={selectedBlog} />} />
       </Routes>
-    </div>
+    </Container>
   )
 }
 

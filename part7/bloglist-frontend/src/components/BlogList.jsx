@@ -6,6 +6,8 @@ import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import Blog from './Blog'
+import { List, ListItem } from '@mui/material'
+import { Link } from 'react-router-dom'
 
 const BlogList = () => {
   const dispatch = useDispatch()
@@ -31,9 +33,13 @@ const BlogList = () => {
         <BlogForm blogFormRef={blogFormRef} />
       </Togglable>
 
-      {[...blogs].sort(sortByLikes).map((blog) => (
-        <Blog key={blog.id} blog={blog} />
-      ))}
+      <List>
+        {[...blogs].sort(sortByLikes).map((blog) => (
+          <ListItem key={blog.id} component={Link} to={`/blogs/${blog.id}`}>
+            <Blog blog={blog} />
+          </ListItem>
+        ))}
+      </List>
     </>
   )
 }

@@ -5,6 +5,7 @@ import {
   notifyWithTimeout,
   setNotificationStyle,
 } from '../reducers/notificationReducer'
+import { AppBar, Button, Toolbar, Typography } from '@mui/material'
 
 const Navbar = () => {
   const dispatch = useDispatch()
@@ -17,18 +18,21 @@ const Navbar = () => {
     dispatch(notifyWithTimeout('successfully logged out', 5))
   }
 
-  const style = {
-    background: 'lightgray',
-    padding: 4,
-    width: '100%',
-  }
-
   return (
-    <div style={style}>
-      <Link to="/blogs">blogs</Link> <Link to="/users">users</Link>{' '}
-      <span>{user.name} logged in</span>{' '}
-      <button onClick={handleLogout}>logout</button>
-    </div>
+    <AppBar position="static">
+      <Toolbar>
+        <Button color="inherit" component={Link} to="/blogs">
+          blogs
+        </Button>
+        <Button color="inherit" component={Link} to="/users">
+          users
+        </Button>
+        <Typography variant="body1">{user.name} logged in</Typography>
+        <Button color="inherit" onClick={handleLogout}>
+          Logout
+        </Button>
+      </Toolbar>
+    </AppBar>
   )
 }
 
