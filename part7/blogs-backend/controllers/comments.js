@@ -26,7 +26,7 @@ commentsRouter.post("/:id/comments", async (request, response) => {
     blog.comments = blog.comments.concat(request.body);
     await blog.save();
 
-    response.status(201).json(blog.comments);
+    response.status(201).json(blog);
   } catch (error) {
     response.status(500).json({ error: "Something went wrong" });
   }
