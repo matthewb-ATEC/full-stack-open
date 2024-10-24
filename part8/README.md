@@ -18,31 +18,31 @@ npm install @apollo/server graphql
 Create index.js with the following contents:
 
 ```javascript
-const { ApolloServer } = require("@apollo/server");
-const { startStandaloneServer } = require("@apollo/server/standalone");
+const { ApolloServer } = require('@apollo/server')
+const { startStandaloneServer } = require('@apollo/server/standalone')
 
 let persons = [
   {
-    name: "Arto Hellas",
-    phone: "040-123543",
-    street: "Tapiolankatu 5 A",
-    city: "Espoo",
-    id: "3d594650-3436-11e9-bc57-8b80ba54c431",
+    name: 'Arto Hellas',
+    phone: '040-123543',
+    street: 'Tapiolankatu 5 A',
+    city: 'Espoo',
+    id: '3d594650-3436-11e9-bc57-8b80ba54c431',
   },
   {
-    name: "Matti Luukkainen",
-    phone: "040-432342",
-    street: "Malminkaari 10 A",
-    city: "Helsinki",
-    id: "3d599470-3436-11e9-bc57-8b80ba54c431",
+    name: 'Matti Luukkainen',
+    phone: '040-432342',
+    street: 'Malminkaari 10 A',
+    city: 'Helsinki',
+    id: '3d599470-3436-11e9-bc57-8b80ba54c431',
   },
   {
-    name: "Venla Ruuska",
-    street: "Nallemäentie 22 C",
-    city: "Helsinki",
-    id: "3d599471-3436-11e9-bc57-8b80ba54c431",
+    name: 'Venla Ruuska',
+    street: 'Nallemäentie 22 C',
+    city: 'Helsinki',
+    id: '3d599471-3436-11e9-bc57-8b80ba54c431',
   },
-];
+]
 
 const typeDefs = `
   type Person {
@@ -58,7 +58,7 @@ const typeDefs = `
     allPersons: [Person!]!
     findPerson(name: String!): Person
   }
-`;
+`
 
 const resolvers = {
   Query: {
@@ -66,18 +66,18 @@ const resolvers = {
     allPersons: () => persons,
     findPerson: (root, args) => persons.find((p) => p.name === args.name),
   },
-};
+}
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-});
+})
 
 startStandaloneServer(server, {
   listen: { port: 4000 },
 }).then(({ url }) => {
-  console.log(`Server ready at ${url}`);
-});
+  console.log(`Server ready at ${url}`)
+})
 ```
 
 Start the server by running:
@@ -162,7 +162,7 @@ const resolvers = {
 Validation covers some error handling, but for mutations may require explicit error handling. To prevent adding the same number to a phonebook multiple times we do the following:
 
 ```javascript
-const { GraphQLError } = require("graphql");
+const { GraphQLError } = require('graphql')
 // ...
 
 const resolvers = {
@@ -170,20 +170,20 @@ const resolvers = {
   Mutation: {
     addPerson: (root, args) => {
       if (persons.find((p) => p.name === args.name)) {
-        throw new GraphQLError("Name must be unique", {
+        throw new GraphQLError('Name must be unique', {
           extensions: {
-            code: "BAD_USER_INPUT",
+            code: 'BAD_USER_INPUT',
             invalidArgs: args.name,
           },
-        });
+        })
       }
 
-      const person = { ...args, id: uuid() };
-      persons = persons.concat(person);
-      return person;
+      const person = { ...args, id: uuid() }
+      persons = persons.concat(person)
+      return person
     },
   },
-};
+}
 ```
 
 ### Enumerables
@@ -271,4 +271,206 @@ query {
     name
   }
 }
+```
+
+## Apollo Client
+
+To send query requests to the apollo server we can use the apollo client library. Install it on the frontend with:
+
+```bash
+npm install @apollo/client graphql
+```
+
+Create the and provide the client in the main.jsx file:
+
+```javascript
+import ReactDOM from 'react-dom/client'
+import App from './App'
+
+import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client'
+
+const client = new ApolloClient({
+  uri: 'http://localhost:4000',
+  cache: new InMemoryCache(),
+})
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <ApolloProvider client={client}>
+    <App />
+  </ApolloProvider>
+)
+```
+
+### Making Queries
+
+use the useQuery() hook to execute queries:
+
+```javascript
+import { gql, useQuery } from '@apollo/client'
+
+const ALL_PERSONS = gql`
+  query {
+    allPersons {
+      name
+      phone
+      id
+    }
+  }
+`
+
+const App = () => {
+  const result = useQuery(ALL_PERSONS)
+
+  if (result.loading) {
+    return <div>loading...</div>
+  }
+
+  return <div>{result.data.allPersons.map((p) => p.name).join(', ')}</div>
+}
+
+export default App
+```
+
+### Named Queries and Variables
+
+We can pass parameters into named queries using the $variable syntax. We can also prevent the useQuery hook from executing when the component is rendered by adding coniditions to the skip option:
+
+```javascript
+import { useState } from 'react'
+import { gql, useQuery } from '@apollo/client'
+
+const FIND_PERSON = gql`
+  query findPersonByName($nameToSearch: String!) {
+    findPerson(name: $nameToSearch) {
+      name
+      phone
+      id
+      address {
+        street
+        city
+      }
+    }
+  }
+`
+
+const Persons = ({ persons }) => {
+  const [nameToSearch, setNameToSearch] = useState(null)
+  const result = useQuery(FIND_PERSON, {
+    variables: { nameToSearch },
+    skip: !nameToSearch,
+  })
+
+  if (nameToSearch && result.data) {
+    return (
+      <Person
+        person={result.data.findPerson}
+        onClose={() => setNameToSearch(null)}
+      />
+    )
+  }
+  // ...
+}
+```
+
+### Mutations
+
+The useMutation() hook can be used to send mutation queries.
+
+```javascript
+import { gql, useMutation } from '@apollo/client'
+
+const CREATE_PERSON = gql`
+  // ...
+`
+
+const PersonForm = () => {
+  // ...
+  const [createPerson] = useMutation(CREATE_PERSON)
+
+  const submit = (event) => {
+    event.preventDefault()
+    createPerson({ variables: { name, phone, street, city } })
+    // ...
+  }
+
+  return (
+    // ...
+  )
+}
+```
+
+### Cache
+
+Queries saved their results in the browser cache but that cache can become innacurate after mutations. To properly update the cache we can either continuously poll the server for updates or manually update the refetch queires after mutations. Both have pros and cons.
+
+```javascript
+const result = useQuery(ALL_PERSONS, {
+  pollInterval: 2000,
+})
+```
+
+```javascript
+const [createPerson] = useMutation(CREATE_PERSON, {
+  refetchQueries: [{ query: ALL_PERSONS }],
+})
+```
+
+### Project Structure
+
+Queries can be stored in their own queries.js file and imported where needed:
+
+```javascript
+import { gql } from '@apollo/client'
+
+export const ALL_PERSONS = gql`
+  query {
+    // ...
+  }
+`
+export const FIND_PERSON = gql`
+  query findPersonByName($nameToSearch: String!) {
+    // ...
+  }
+`
+
+export const CREATE_PERSON = gql`
+  mutation createPerson($name: String!, $street: String!, $city: String!, $phone: String) {
+    // ...
+  }
+`
+```
+
+```javascript
+import { ALL_PERSONS } from './queries'
+
+const App = () => {
+  const result = useQuery(ALL_PERSONS)
+  // ...
+}
+```
+
+### Error Handling
+
+Mutations will return errors that can be handled using the onError option:
+
+```javascript
+const [createPerson] = useMutation(CREATE_PERSON, {
+  refetchQueries: [{ query: ALL_PERSONS }],
+  onError: (error) => {
+    const messages = error.graphQLErrors.map((e) => e.message).join('\n')
+    setError(messages)
+  },
+})
+```
+
+For queries that return null when a mutable object is not found GraphQL does not consider null to be an error. We must manaully identify and set the error message in these instances:
+
+```javascript
+const [changeNumber, result] = useMutation(EDIT_NUMBER)
+
+useEffect(() => {
+  if (result.data && result.data.editNumber === null) {
+    setError('person not found')
+  }
+}, [result.data])
 ```
