@@ -14,7 +14,6 @@
     "graphql": "^16.9.0",
     "mongoose": "^8.7.2",
     "mongoose-unique-validator": "^4.0.1",
-    "nodemon": "^3.1.7",
     "uuid": "^10.0.0"
   }
 }
