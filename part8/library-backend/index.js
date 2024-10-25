@@ -59,31 +59,30 @@ const resolvers = {
     bookCount: async () => Book.collection.countDocuments(),
     authorCount: async () => Author.collection.countDocuments(),
     allBooks: async (root, args) => {
-      /*
       const filter = {}
 
       if (args.author) {
         const author = await Author.findOne({ name: args.author })
         if (author) {
-          filter.author = author._id // Use author's _id to match the books
+          filter.author = author._id
         } else {
-          return [] // Return empty if no matching author is found
+          return []
         }
       }
 
       if (args.genre) {
-        filter.genres = { $in: [args.genre] } // Match if the genre is in the book's genres array
+        filter.genres = { $in: [args.genre] }
       }
-      */
-      return Book.find({}).populate('author')
+
+      return Book.find(filter).populate('author')
     },
     allAuthors: async () => Author.find({}),
   },
-  /*Author: {
+  Author: {
     bookCount: async (root) => {
-      return Book.find({}).filter((book) => book.author === root.name).length
+      return Book.countDocuments({ author: root._id })
     },
-  },*/
+  },
 
   Mutation: {
     addBook: async (root, args) => {

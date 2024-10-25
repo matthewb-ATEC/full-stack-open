@@ -474,3 +474,176 @@ useEffect(() => {
   }
 }, [result.data])
 ```
+
+## Mongoose and Apollo
+
+Once the backend has apollo, install mongoose and dotenv to set up the database connection:
+
+```bash
+npm install mongoose dotenv
+```
+
+### Transforming JSON
+
+GraphQL automatically converts from \_id to id when retrieving data from the a mongo database.
+
+### Resolver Promises
+
+Resolvers return promises rather than objects so we cand use async/await syntax.
+
+### Validation
+
+Validation is handled through the mongoose schema. Our resolvers must implement a try/catch block to handle these errors:
+
+```javascript
+const resolvers = {
+  // ...
+  Mutation: {
+    addPerson: async (root, args) => {
+      const person = new Person({ ...args })
+
+      try {
+        await person.save()
+      } catch (error) {
+        throw new GraphQLError('Saving person failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.name,
+            error,
+          },
+        })
+      }
+
+      return person
+    },
+    // ...
+  },
+}
+```
+
+### User Authentication
+
+Users require a mongoose schema, GraphQL schema, and resolvers:
+
+```javascript
+const mongoose = require('mongoose')
+
+const schema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    minlength: 3,
+  },
+  friends: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Person',
+    },
+  ],
+})
+
+module.exports = mongoose.model('User', schema)
+```
+
+```javascript
+type User {
+  username: String!
+  friends: [Person!]!
+  id: ID!
+}
+
+type Token {
+  value: String!
+}
+
+type Query {
+  // ..
+  me: User
+}
+
+type Mutation {
+  // ...
+  createUser(
+    username: String!
+  ): User
+  login(
+    username: String!
+    password: String!
+  ): Token
+}
+```
+
+```javascript
+const jwt = require('jsonwebtoken')
+
+Mutation: {
+  // ..
+  createUser: async (root, args) => {
+    const user = new User({ username: args.username })
+
+    return user.save()
+      .catch(error => {
+        throw new GraphQLError('Creating the user failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.username,
+            error
+          }
+        })
+      })
+  },
+  login: async (root, args) => {
+    const user = await User.findOne({ username: args.username })
+
+    if ( !user || args.password !== 'secret' ) {
+      throw new GraphQLError('wrong credentials', {
+        extensions: {
+          code: 'BAD_USER_INPUT'
+        }
+      })
+    }
+
+    const userForToken = {
+      username: user.username,
+      id: user._id,
+    }
+
+    return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
+  },
+},
+```
+
+JWT_SECRET must be defined in the .env file.
+
+### Context
+
+By adding context to the apollo server we can provide the user identification information to all resolvers:
+
+```javascript
+startStandaloneServer(server, {
+  listen: { port: 4000 },
+  context: async ({ req, res }) => {
+    const auth = req ? req.headers.authorization : null
+    if (auth && auth.startsWith('Bearer ')) {
+      const decodedToken = jwt.verify(auth.substring(7), process.env.JWT_SECRET)
+      const currentUser = await User.findById(decodedToken.id).populate(
+        'friends'
+      )
+      return { currentUser }
+    }
+  },
+}).then(({ url }) => {
+  console.log(`Server ready at ${url}`)
+})
+```
+
+Values from the context can be accessed as follows:
+
+```javascript
+Query: {
+  // ...
+  me: (root, args, { currentUser }) => {
+    return currentUser
+  }
+},
+```
