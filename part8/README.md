@@ -653,3 +653,160 @@ Query: {
   }
 },
 ```
+
+### User Authentication on the Frontend
+
+Now that users are stored in the mongo database in the backend and actions require atuhorization, we must store that authorization token on the front end:
+
+```javascript
+const App = () => {
+
+  const [token, setToken] = useState(null)
+
+  // ...
+
+  if (!token) {
+    return (
+      <div>
+        <Notify errorMessage={errorMessage} />
+        <h2>Login</h2>
+        <LoginForm
+          setToken={setToken}
+          setError={notify}
+        />
+      </div>
+    )
+  }
+
+  return (
+    // ...
+  )
+}
+```
+
+Next, we define a mutation for logging in:
+
+```javascript
+export const LOGIN = gql`
+  mutation login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      value
+    }
+  }
+`
+```
+
+The login form stores the token in state and localStorage:
+
+```javascript
+import { useState, useEffect } from 'react'
+import { useMutation } from '@apollo/client'
+import { LOGIN } from '../queries'
+
+const LoginForm = ({ setError, setToken }) => {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+
+  const [ login, result ] = useMutation(LOGIN, {
+    onError: (error) => {
+      setError(error.graphQLErrors[0].message)
+    }
+  })
+
+  useEffect(() => {
+    if ( result.data ) {
+      const token = result.data.login.value
+      setToken(token)
+      localStorage.setItem('APP_NAME-user-token', token)
+    }
+  }, [result.data])
+
+  const submit = async (event) => {
+    event.preventDefault()
+    login({ variables: { username, password } })
+  }
+
+  return (
+    // ...
+  )
+}
+```
+
+We must reset the cache when the user logs out:
+
+```javascript
+const App = () => {
+  // ...
+  const [token, setToken] = useState(null)
+  const client = useApolloClient()
+
+  const logout = () => {
+    setToken(null)
+    localStorage.clear()
+    client.resetStore()
+  }
+  // ...
+  return (
+    // ...
+  )
+}
+```
+
+Adding the token to the header of requests from the front end requires updating the client definition in main.jsx:
+
+```javascript
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  createHttpLink,
+} from '@apollo/client'
+import { setContext } from '@apollo/client/link/context'
+
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('phonenumbers-user-token')
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : null,
+    },
+  }
+})
+
+const httpLink = createHttpLink({
+  uri: 'http://localhost:4000',
+})
+
+const client = new ApolloClient({
+  cache: new InMemoryCache(),
+  link: authLink.concat(httpLink),
+})
+```
+
+Anywhere that a parameterized query accepts an optional parameter we must ensure that we send valid data or undefined:
+
+```javascript
+const submit = async (event) => {
+    event.preventDefault()
+    createPerson({
+      variables: {
+        name, street, city,
+        phone: phone.length > 0 ? phone : undefined
+      }
+    })
+```
+
+Instead of updating the cache by refetching queries we can provide an update callback for a mutation:
+
+```javascript
+const [createPerson] = useMutation(CREATE_PERSON, {
+  //...
+  update: (cache, response) => {
+    cache.updateQuery({ query: ALL_PERSONS }, ({ allPersons }) => {
+      return {
+        allPersons: allPersons.concat(response.data.addPerson),
+      }
+    })
+  },
+})
+```
