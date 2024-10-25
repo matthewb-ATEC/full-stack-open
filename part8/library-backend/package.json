@@ -12,6 +12,7 @@
     "@apollo/server": "^4.11.0",
     "dotenv": "^16.4.5",
     "graphql": "^16.9.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.7.2",
     "mongoose-unique-validator": "^4.0.1",
     "uuid": "^10.0.0"
