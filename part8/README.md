@@ -491,11 +491,13 @@ GraphQL automatically converts from \_id to id when retrieving data from the a m
 
 Resolvers return promises rather than objects so we cand use async/await syntax.
 
-### Validation
+### Error Handling
 
 Validation is handled through the mongoose schema. Our resolvers must implement a try/catch block to handle these errors:
 
 ```javascript
+const { GraphQLError } = require('graphql')
+
 const resolvers = {
   // ...
   Mutation: {

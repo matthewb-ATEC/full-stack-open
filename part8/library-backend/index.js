@@ -1,4 +1,5 @@
 const { ApolloServer } = require('@apollo/server')
+const { GraphQLError } = require('graphql')
 const { startStandaloneServer } = require('@apollo/server/standalone')
 const mongoose = require('mongoose')
 mongoose.set('strictQuery', false)
@@ -56,66 +57,115 @@ const typeDefs = `
 
 const resolvers = {
   Query: {
-    bookCount: async () => Book.collection.countDocuments(),
-    authorCount: async () => Author.collection.countDocuments(),
-    allBooks: async (root, args) => {
-      const filter = {}
-
-      if (args.author) {
-        const author = await Author.findOne({ name: args.author })
-        if (author) {
-          filter.author = author._id
-        } else {
-          return []
-        }
+    bookCount: async () => {
+      try {
+        return await Book.collection.countDocuments()
+      } catch (error) {
+        throw new GraphQLError('Failed to fetch book count', {
+          extensions: { code: 'BOOK_COUNT_FAILED', error },
+        })
       }
-
-      if (args.genre) {
-        filter.genres = { $in: [args.genre] }
-      }
-
-      return Book.find(filter).populate('author')
     },
-    allAuthors: async () => Author.find({}),
+    authorCount: async () => {
+      try {
+        return await Author.collection.countDocuments()
+      } catch (error) {
+        throw new GraphQLError('Failed to fetch author count', {
+          extensions: { code: 'AUTHOR_COUNT_FAILED', error },
+        })
+      }
+    },
+    allBooks: async (root, args) => {
+      try {
+        const filter = {}
+
+        if (args.author) {
+          const author = await Author.findOne({ name: args.author })
+          if (author) {
+            filter.author = author._id
+          } else {
+            return []
+          }
+        }
+
+        if (args.genre) {
+          filter.genres = { $in: [args.genre] }
+        }
+
+        return await Book.find(filter).populate('author')
+      } catch (error) {
+        throw new GraphQLError('Failed to fetch books', {
+          extensions: { code: 'ALL_BOOKS_QUERY_FAILED', error },
+        })
+      }
+    },
+    allAuthors: async () => {
+      try {
+        return await Author.find({})
+      } catch (error) {
+        throw new GraphQLError('Failed to fetch authors', {
+          extensions: { code: 'ALL_AUTHORS_QUERY_FAILED', error },
+        })
+      }
+    },
   },
   Author: {
     bookCount: async (root) => {
-      return Book.countDocuments({ author: root._id })
+      try {
+        return await Book.countDocuments({ author: root._id })
+      } catch (error) {
+        throw new GraphQLError('Failed to fetch book count for author', {
+          extensions: { code: 'AUTHOR_BOOK_COUNT_FAILED', error },
+        })
+      }
     },
   },
-
   Mutation: {
     addBook: async (root, args) => {
-      let author = await Author.findOne({ name: args.author })
+      try {
+        let author = await Author.findOne({ name: args.author })
 
-      if (!author) {
-        let author = new Author({
-          name: args.author,
-          born: null,
+        if (!author) {
+          author = new Author({
+            name: args.author,
+            born: null,
+          })
+          await author.save()
+        }
+
+        const book = new Book({
+          title: args.title,
+          published: args.published,
+          author: author._id,
+          genres: args.genres,
         })
-        await author.save()
+
+        await book.save()
+
+        return book.populate('author')
+      } catch (error) {
+        throw new GraphQLError('Failed to add book', {
+          extensions: { code: 'ADD_BOOK_FAILED', error },
+        })
       }
-
-      const book = new Book({
-        title: args.title,
-        published: args.published,
-        author: author.id,
-        genres: args.genres,
-      })
-
-      await book.save()
-
-      return book.populate('author')
     },
     editAuthor: async (root, args) => {
-      const author = await Author.findOne({ name: args.name })
+      try {
+        const author = await Author.findOne({ name: args.name })
 
-      if (!author) {
-        return null
+        if (!author) {
+          throw new GraphQLError('Author not found', {
+            extensions: { code: 'AUTHOR_NOT_FOUND' },
+          })
+        }
+
+        author.born = args.setBornTo
+        return await author.save()
+      } catch (error) {
+        throw new GraphQLError('Failed to edit author', {
+          extensions: { code: 'EDIT_AUTHOR_FAILED', error },
+        })
       }
-
-      author.born = args.setBornTo
-      return author.save()
     },
   },
 }
