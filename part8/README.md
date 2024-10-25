@@ -575,6 +575,10 @@ type Mutation {
 }
 ```
 
+```bash
+npm install jsonwebtoken
+```
+
 ```javascript
 const jwt = require('jsonwebtoken')
 
