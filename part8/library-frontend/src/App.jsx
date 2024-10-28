@@ -3,13 +3,14 @@ import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import Login from './components/Login'
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 import { useApolloClient } from '@apollo/client'
 import Recommended from './components/Recommended'
 
 const App = () => {
   const [token, setToken] = useState(null)
   const client = useApolloClient()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const existingToken = localStorage.getItem('libraryApp-user-token')
@@ -20,6 +21,7 @@ const App = () => {
     setToken(null)
     localStorage.clear()
     client.resetStore()
+    navigate('/')
   }
 
   return (

@@ -5,10 +5,11 @@ import { useState } from 'react'
 const Books = () => {
   const [filter, setFilter] = useState(undefined)
   const { loading: allBooksLoading, data: allBooksData } = useQuery(ALL_BOOKS)
-  const { loading: filteredBooksLoading, data: filteredBooksData } = useQuery(
-    ALL_BOOKS,
-    { variables: { genre: filter } }
-  )
+  const {
+    loading: filteredBooksLoading,
+    data: filteredBooksData,
+    refetch: filteredBooksRefetch,
+  } = useQuery(ALL_BOOKS, { variables: { genre: filter } })
 
   if (allBooksLoading || filteredBooksLoading) return <div>Loading...</div>
 
@@ -43,11 +44,24 @@ const Books = () => {
         </tbody>
       </table>
       {allGenres.map((genre) => (
-        <button key={genre} onClick={() => setFilter(genre)}>
+        <button
+          key={genre}
+          onClick={() => {
+            setFilter(genre)
+            filteredBooksRefetch({ genre: genre })
+          }}
+        >
           {genre}
         </button>
       ))}
-      <button onClick={() => setFilter(undefined)}>all genres</button>
+      <button
+        onClick={() => {
+          setFilter(undefined)
+          filteredBooksRefetch({ genre: undefined })
+        }}
+      >
+        all genres
+      </button>
     </div>
   )
 }
