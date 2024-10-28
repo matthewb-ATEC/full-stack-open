@@ -6,6 +6,8 @@ import Login from './components/Login'
 import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 import { useApolloClient } from '@apollo/client'
 import Recommended from './components/Recommended'
+import { useSubscription } from '@apollo/client'
+import { BOOK_ADDED } from './queries'
 
 const App = () => {
   const [token, setToken] = useState(null)
@@ -16,6 +18,23 @@ const App = () => {
     const existingToken = localStorage.getItem('libraryApp-user-token')
     if (existingToken) setToken(existingToken)
   }, [])
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      console.log('Data received in subscription:', data)
+
+      const book = data?.data?.bookAdded || data?.bookAdded
+
+      if (book) {
+        window.alert(
+          `Book "${book.title}" by ${book.author.name} added. Notification provided by subscription.`
+        )
+        console.log('Book data:', book)
+      } else {
+        console.error('Book data is missing:', data)
+      }
+    },
+  })
 
   const logout = () => {
     setToken(null)
