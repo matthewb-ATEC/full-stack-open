@@ -810,3 +810,260 @@ const [createPerson] = useMutation(CREATE_PERSON, {
   },
 })
 ```
+
+### Fragments
+
+Define the structure of commonly returned data:
+
+```javascript
+const PERSON_DETAILS = gql`
+  fragment PersonDetails on Person {
+    id
+    name
+    phone
+    address {
+      street
+      city
+    }
+  }
+`
+```
+
+Use the fragment in queries:
+
+```javascript
+export const FIND_PERSON = gql`
+  query findPersonByName($nameToSearch: String!) {
+    findPerson(name: $nameToSearch) {
+      ...PersonDetails
+    }
+  }
+  ${PERSON_DETAILS}
+`
+```
+
+### Subscriptions
+
+Clients can subscribe to changes in the server. To utilize subscriptions we need to use expressMiddleware isntead of startStandaloneServer.
+
+```bash
+npm install express cors
+```
+
+```javascript
+const { ApolloServer } = require('@apollo/server')
+
+const { expressMiddleware } = require('@apollo/server/express4')
+const {
+  ApolloServerPluginDrainHttpServer,
+} = require('@apollo/server/plugin/drainHttpServer')
+const { makeExecutableSchema } = require('@graphql-tools/schema')
+const express = require('express')
+const cors = require('cors')
+const http = require('http')
+
+const jwt = require('jsonwebtoken')
+
+const mongoose = require('mongoose')
+
+const User = require('./models/user')
+
+const typeDefs = require('./schema')
+const resolvers = require('./resolvers')
+
+const MONGODB_URI = 'mongodb+srv://databaseurlhere'
+
+console.log('connecting to', MONGODB_URI)
+
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.log('connected to MongoDB')
+  })
+  .catch((error) => {
+    console.log('error connection to MongoDB:', error.message)
+  })
+
+// setup is now within a function
+const start = async () => {
+  const app = express()
+  const httpServer = http.createServer(app)
+
+  const server = new ApolloServer({
+    schema: makeExecutableSchema({ typeDefs, resolvers }),
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  })
+
+  await server.start()
+
+  app.use(
+    '/',
+    cors(),
+    express.json(),
+    expressMiddleware(server, {
+      context: async ({ req }) => {
+        const auth = req ? req.headers.authorization : null
+        if (auth && auth.startsWith('Bearer ')) {
+          const decodedToken = jwt.verify(
+            auth.substring(7),
+            process.env.JWT_SECRET
+          )
+          const currentUser = await User.findById(decodedToken.id).populate(
+            'friends'
+          )
+          return { currentUser }
+        }
+      },
+    })
+  )
+
+  const PORT = 4000
+
+  httpServer.listen(PORT, () =>
+    console.log(`Server is now running on http://localhost:${PORT}`)
+  )
+}
+
+start()
+```
+
+#### Subscriptions on the Server
+
+Define a new subscription as follows:
+
+```javascript
+type Subscription {
+  personAdded: Person!
+}
+```
+
+To handle GraphQL subscriptions and Node.js WebSockets:
+
+```bash
+npm install graphql-ws ws @graphql-tools/schema
+```
+
+```javascript
+const { WebSocketServer } = require('ws')
+const { useServer } = require('graphql-ws/lib/use/ws')
+
+// ...
+
+const start = async () => {
+  const app = express()
+  const httpServer = http.createServer(app)
+
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: '/',
+  })
+
+  const schema = makeExecutableSchema({ typeDefs, resolvers })
+  const serverCleanup = useServer({ schema }, wsServer)
+
+  const server = new ApolloServer({
+    schema,
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose()
+            },
+          }
+        },
+      },
+    ],
+  })
+
+  await server.start()
+
+  app.use(
+    '/',
+    cors(),
+    express.json(),
+    expressMiddleware(server, {
+      context: async ({ req }) => {
+        const auth = req ? req.headers.authorization : null
+        if (auth && auth.startsWith('Bearer ')) {
+          const decodedToken = jwt.verify(
+            auth.substring(7),
+            process.env.JWT_SECRET
+          )
+          const currentUser = await User.findById(decodedToken.id).populate(
+            'friends'
+          )
+          return { currentUser }
+        }
+      },
+    })
+  )
+
+  const PORT = 4000
+
+  httpServer.listen(PORT, () =>
+    console.log(`Server is now running on http://localhost:${PORT}`)
+  )
+}
+
+start()
+```
+
+Add a resolver for the personAdded subscription and send an update when adding a person:
+
+```bash
+npm install graphql-subscriptions
+```
+
+```javascript
+const { PubSub } = require('graphql-subscriptions')
+const pubsub = new PubSub()
+
+// ...
+
+const resolvers = {
+  // ...
+  Mutation: {
+    addPerson: async (root, args, context) => {
+      const person = new Person({ ...args })
+      const currentUser = context.currentUser
+
+      if (!currentUser) {
+        throw new GraphQLError('not authenticated', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+          },
+        })
+      }
+
+      try {
+        await person.save()
+        currentUser.friends = currentUser.friends.concat(person)
+        await currentUser.save()
+      } catch (error) {
+        throw new GraphQLError('Saving user failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.name,
+            error,
+          },
+        })
+      }
+
+      pubsub.publish('PERSON_ADDED', { personAdded: person })
+
+      return person
+    },
+  },
+
+  Subscription: {
+    personAdded: {
+      subscribe: () => pubsub.asyncIterator('PERSON_ADDED'),
+    },
+  },
+}
+```
+
+### Subscriptions on the Client
