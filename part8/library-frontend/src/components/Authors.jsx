@@ -3,7 +3,7 @@ import { useMutation, useQuery } from '@apollo/client'
 import { useState } from 'react'
 import Select from 'react-select'
 
-const Authors = (props) => {
+const Authors = () => {
   const result = useQuery(ALL_AUTHORS)
 
   const [editAuthor] = useMutation(EDIT_AUTHOR, {
@@ -21,10 +21,6 @@ const Authors = (props) => {
     })
     setSelectedAuthor(null)
     setBornYear('')
-  }
-
-  if (!props.show) {
-    return null
   }
 
   if (result.loading) return <div>Loading...</div>
