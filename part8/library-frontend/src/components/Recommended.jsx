@@ -1,17 +1,22 @@
-import { useQuery } from '@apollo/client'
+import { useLazyQuery, useQuery } from '@apollo/client'
 import { ALL_BOOKS, ME } from '../queries'
 
 const Recommended = () => {
-  const result = useQuery(ALL_BOOKS)
-  const meResult = useQuery(ME)
+  const { loading: loadingUser, data: userData } = useQuery(ME)
 
-  if (result.loading || meResult.loading) return <div>Loading...</div>
+  const [loadBooks, { called, loading: loadingBooks, data: booksData }] =
+    useLazyQuery(ALL_BOOKS)
 
-  const books = result.data.allBooks
-  const favoriteGenre = meResult.data.me.favoriteGenre
-  const filteredBooks = books.filter((book) =>
-    book.genres.includes(favoriteGenre)
-  )
+  if (loadingUser) return <div>Loading...</div>
+
+  const { favoriteGenre } = userData.me
+  if (!called) {
+    loadBooks({ variables: { genre: favoriteGenre } })
+  }
+
+  if (loadingUser || (called && loadingBooks)) return <div>Loading...</div>
+
+  const filteredBooks = booksData?.allBooks || []
 
   return (
     <div>
