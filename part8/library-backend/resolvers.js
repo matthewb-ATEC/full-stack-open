@@ -8,6 +8,8 @@ const Book = require('./models/book')
 const Author = require('./models/author')
 const User = require('./models/user')
 
+const DataLoader = require('dataloader')
+
 const resolvers = {
   Query: {
     me: (root, args, { currentUser }) => {
@@ -15,6 +17,7 @@ const resolvers = {
     },
     bookCount: async () => {
       try {
+        console.log('Book.collection')
         return await Book.collection.countDocuments()
       } catch (error) {
         throw new GraphQLError('Failed to fetch book count', {
@@ -24,6 +27,7 @@ const resolvers = {
     },
     authorCount: async () => {
       try {
+        console.log('Author.collection')
         return await Author.collection.countDocuments()
       } catch (error) {
         throw new GraphQLError('Failed to fetch author count', {
@@ -36,6 +40,7 @@ const resolvers = {
         const filter = {}
 
         if (args.author) {
+          console.log('Author.findOne')
           const author = await Author.findOne({ name: args.author })
           if (author) {
             filter.author = author._id
@@ -47,7 +52,7 @@ const resolvers = {
         if (args.genre) {
           filter.genres = { $in: [args.genre] }
         }
-
+        console.log('Book.find')
         return await Book.find(filter).populate('author')
       } catch (error) {
         throw new GraphQLError('Failed to fetch books', {
@@ -57,6 +62,7 @@ const resolvers = {
     },
     allAuthors: async () => {
       try {
+        console.log('Author.find')
         return await Author.find({})
       } catch (error) {
         throw new GraphQLError('Failed to fetch authors', {
@@ -66,14 +72,8 @@ const resolvers = {
     },
   },
   Author: {
-    bookCount: async (root) => {
-      try {
-        return await Book.countDocuments({ author: root._id })
-      } catch (error) {
-        throw new GraphQLError('Failed to fetch book count for author', {
-          extensions: { code: 'AUTHOR_BOOK_COUNT_FAILED', error },
-        })
-      }
+    bookCount: async (root, args, context) => {
+      return context.bookCountLoader.load(root._id)
     },
   },
   Mutation: {
@@ -94,6 +94,7 @@ const resolvers = {
       })
     },
     login: async (root, args) => {
+      console.log('User.findOne')
       const user = await User.findOne({ username: args.username })
 
       if (!user || args.password !== 'secret') {
@@ -121,6 +122,7 @@ const resolvers = {
           })
         }
 
+        console.log('Author.findOne')
         let author = await Author.findOne({ name: args.author })
 
         if (!author) {
@@ -185,4 +187,19 @@ const resolvers = {
   },
 }
 
-module.exports = resolvers
+// Create a DataLoader to batch requests for book counts
+const bookCountLoader = new DataLoader(async (authorIds) => {
+  const books = await Book.aggregate([
+    { $match: { author: { $in: authorIds } } },
+    { $group: { _id: '$author', count: { $sum: 1 } } },
+  ])
+
+  const bookCountMap = {}
+  books.forEach((book) => {
+    bookCountMap[book._id] = book.count
+  })
+
+  return authorIds.map((id) => bookCountMap[id] || 0)
+})
+
+module.exports = { resolvers, bookCountLoader }
