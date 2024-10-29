@@ -4,10 +4,25 @@ import Books from './components/Books'
 import NewBook from './components/NewBook'
 import Login from './components/Login'
 import { Routes, Route, Link, useNavigate } from 'react-router-dom'
-import { useApolloClient } from '@apollo/client'
+import { useApolloClient, useSubscription } from '@apollo/client'
 import Recommended from './components/Recommended'
-import { useSubscription } from '@apollo/client'
-import { BOOK_ADDED } from './queries'
+import { ALL_BOOKS, BOOK_ADDED } from './queries'
+
+export const updateCache = (cache, query, addedBook) => {
+  const uniqByName = (a) => {
+    let seen = new Set()
+    return a.filter((item) => {
+      let k = item.title
+      return seen.has(k) ? false : seen.add(k)
+    })
+  }
+
+  cache.updateQuery(query, ({ allBooks }) => {
+    return {
+      allBooks: uniqByName(allBooks.concat(addedBook)),
+    }
+  })
+}
 
 const App = () => {
   const [token, setToken] = useState(null)
@@ -20,19 +35,18 @@ const App = () => {
   }, [])
 
   useSubscription(BOOK_ADDED, {
-    onData: ({ data }) => {
-      console.log('Data received in subscription:', data)
+    onData: ({ data, client }) => {
+      const addedBook = data?.data?.bookAdded || data?.bookAdded
 
-      const book = data?.data?.bookAdded || data?.bookAdded
-
-      if (book) {
-        window.alert(
-          `Book "${book.title}" by ${book.author.name} added. Notification provided by subscription.`
-        )
-        console.log('Book data:', book)
-      } else {
+      if (!addedBook) {
         console.error('Book data is missing:', data)
+        return
       }
+
+      window.alert(
+        `Book "${addedBook.title}" by ${addedBook.author.name} added`
+      )
+      updateCache(client.cache, { query: ALL_BOOKS }, addedBook)
     },
   })
 
