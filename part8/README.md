@@ -1067,3 +1067,5 @@ const resolvers = {
 ```
 
 ### Subscriptions on the Client
+
+The useSubscription hook can be used to handle subscription events in the client. Additionally the client must be initialized with a split uri so it can retrieve information from the server websocket.

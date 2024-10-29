@@ -17,7 +17,7 @@ const mongoose = require('mongoose')
 const User = require('./models/user')
 
 const typeDefs = require('./schema')
-const resolvers = require('./resolvers')
+const { resolvers, bookCountLoader } = require('./resolvers')
 
 require('dotenv').config()
 
@@ -33,6 +33,8 @@ mongoose
   .catch((error) => {
     console.log('error connection to MongoDB:', error.message)
   })
+
+mongoose.set('debug', true)
 
 const start = async () => {
   const app = express()
@@ -77,8 +79,9 @@ const start = async () => {
             process.env.JWT_SECRET
           )
           const currentUser = await User.findById(decodedToken.id)
-          return { currentUser }
+          return { currentUser, bookCountLoader }
         }
+        return { bookCountLoader }
       },
     })
   )
