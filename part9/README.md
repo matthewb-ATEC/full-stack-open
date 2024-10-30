@@ -293,3 +293,55 @@ router.get('/', (_req, res: Response<DiaryEntry[]>) => {
   res.send(diaryService.getNonSensitiveEntries());
 });
 ```
+
+## Zod
+
+Zod is a package that can be used to narrow types of values which is especially useful when handling POST requests. The following defines a schema that narrows the types of the listed fields, infers a type from the object schema, and extends the type to include the id.
+
+```typescript
+import { z } from 'zod';
+
+export const NewPatientSchema = z.object({
+  name: z.string(),
+  dateOfBirth: z.string().date(),
+  ssn: z.string(),
+  gender: z.nativeEnum(Gender),
+  occupation: z.string(),
+});
+
+export type NewPatient = z.infer<typeof NewPatientSchema>;
+
+export interface Patient extends NewPatient {
+  id: string;
+}
+```
+
+We can create an use middleware to parse these objects into this schema as follows:
+
+```typescript
+import { Request, Response, NextFunction } from 'express';
+import { NewPatient, Patient } from '../types';
+import patientsService from '../services/patientsService';
+import { NewPatientSchema } from '../utils';
+
+const newPatientParser = (req: Request, _res: Response, next: NextFunction) => {
+  try {
+    NewPatientSchema.parse(req.body);
+    next();
+  } catch (error: unknown) {
+    next(error);
+  }
+};
+
+patientsRouter.post(
+  '/',
+  newPatientParser,
+  (
+    request: Request<unknown, unknown, NewPatient>,
+    response: Response<Patient>
+  ) => {
+    const addedPatient = patientsService.addPatient(request.body);
+    response.json(addedPatient);
+  }
+);
+```
