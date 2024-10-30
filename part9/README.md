@@ -247,3 +247,49 @@ package.json
   // ...
 }
 ```
+
+## Utility Types
+
+We can create subtypes of custom types to specify the expected data type. Use Pick to select fields to include in the new type, or Omit to exclude types in the utility type.
+
+```typescript
+export interface DiaryEntry {
+  id: number;
+  date: string;
+  weather: Weather;
+  visibility: Visibility;
+  comment?: string;
+}
+
+// The following define the same type
+export type NonSensitiveDiaryEntry = Pick<
+  DiaryEntry,
+  'id' | 'date' | 'weather' | 'visibility'
+>[];
+export type NonSensitiveDiaryEntry = Omit<DiaryEntry, 'comment'>;
+```
+
+Despite omitting comment from the DiaryEntry type, if we recieve data with the comment field that data will be leaked to the browser unless we return a new object with only the desired fields:
+
+```typescript
+const getNonSensitiveEntries = (): NonSensitiveDiaryEntry[] => {
+  return diaries.map(({ id, date, weather, visibility }) => ({
+    id,
+    date,
+    weather,
+    visibility,
+  }));
+};
+```
+
+## Typing the Request and Response
+
+By default the response type allows for bodies of any type, which can be specified to restrict the valid data types.
+
+```typescript
+import { Response } from 'express';
+// ...
+router.get('/', (_req, res: Response<DiaryEntry[]>) => {
+  res.send(diaryService.getNonSensitiveEntries());
+});
+```
