@@ -70,15 +70,19 @@ const calculateExercises = (
   return exerciseExerciseResults;
 };
 
-try {
-  const { targetAmount, dailyExerciseHours } = parseExerciseArguments(
-    process.argv
-  );
-  console.log(calculateExercises(dailyExerciseHours, targetAmount));
-} catch (error: unknown) {
-  let errorMessage = 'Something bad happened.';
-  if (error instanceof Error) {
-    errorMessage += ' Error: ' + error.message;
+if (require.main === module) {
+  try {
+    const { targetAmount, dailyExerciseHours } = parseExerciseArguments(
+      process.argv
+    );
+    console.log(calculateExercises(dailyExerciseHours, targetAmount));
+  } catch (error: unknown) {
+    let errorMessage = 'Something bad happened.';
+    if (error instanceof Error) {
+      errorMessage += ' Error: ' + error.message;
+    }
+    console.log(errorMessage);
   }
-  console.log(errorMessage);
 }
+
+export default calculateExercises;
