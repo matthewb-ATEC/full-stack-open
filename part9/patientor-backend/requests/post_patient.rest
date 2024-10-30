@@ -1,0 +1,10 @@
+POST http://localhost:3001/api/patients
+Content-Type: application/json
+
+{
+    "name": "Matt Burton",
+    "dateOfBirth": "2002-01-24",
+    "ssn": "049155-2810",
+    "gender": "male",
+    "occupation": "Software Engineer"
+}
