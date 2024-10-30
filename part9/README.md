@@ -95,9 +95,9 @@ npm install --save-dev @stylistic/eslint-plugin
 eslint.config.mjs:
 
 ```mjs
-import eslint from '@eslint/js'
-import tseslint from 'typescript-eslint'
-import stylistic from '@stylistic/eslint-plugin'
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import stylistic from '@stylistic/eslint-plugin';
 
 export default tseslint.config({
   files: ['**/*.ts'],
@@ -124,7 +124,7 @@ export default tseslint.config({
     '@typescript-eslint/restrict-plus-operands': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
   },
-})
+});
 ```
 
 package.json
@@ -139,4 +139,111 @@ package.json
   },
   // ...
 }s
+```
+
+## Starting from scratch
+
+Start a new node project, install typscript, define a script to execute the typscript compiler, then run the compiler to generate the tsconfig.json
+
+```bash
+npm init
+npm install typescript --save-dev
+```
+
+```json
+{
+  // ..
+  "scripts": {
+    "tsc": "tsc"
+  }
+  // ..
+}
+```
+
+```bash
+npm run tsc -- --init
+```
+
+_Note_ the extra -- before the actual argument! Arguments before -- are interpreted as being for the npm command, while the ones after that are meant for the command that is run through the script
+
+Ensure the following settings are active/uncommented
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "outDir": "./build/",
+    "module": "commonjs",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true
+  }
+}
+```
+
+Install express, express types, and eslint
+
+```bash
+npm install express
+npm install --save-dev eslint @eslint/js typescript-eslint @stylistic/eslint-plugin @types/express @types/eslint__js
+```
+
+Set the eslint.config.mjs:
+
+```mjs
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import stylistic from '@stylistic/eslint-plugin';
+
+export default tseslint.config({
+  files: ['**/*.ts'],
+  extends: [
+    eslint.configs.recommended,
+    ...tseslint.configs.recommendedTypeChecked,
+  ],
+  languageOptions: {
+    parserOptions: {
+      project: true,
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+  plugins: {
+    '@stylistic': stylistic,
+  },
+  ignores: ['build/*'],
+  rules: {
+    '@stylistic/semi': 'error',
+    '@typescript-eslint/no-unsafe-assignment': 'error',
+    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/restrict-template-expressions': 'off',
+    '@typescript-eslint/restrict-plus-operands': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+  },
+});
+```
+
+Install ts-node-dev to update our code live as we save:
+
+```bash
+npm install --save-dev ts-node-dev
+```
+
+package.json
+
+```json
+{
+  // ...
+  "scripts": {
+    "tsc": "tsc",
+    "dev": "ts-node-dev index.ts",
+    "lint": "eslint .",
+    "start": "node build/index.js"
+  }
+  // ...
+}
 ```
