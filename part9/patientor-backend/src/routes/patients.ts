@@ -12,6 +12,18 @@ patientsRouter.get(
   }
 );
 
+patientsRouter.get(
+  '/:id',
+  (request, response: Response<NonSensitivePatient>) => {
+    const id: string = request.params.id;
+    const patient: NonSensitivePatient | undefined =
+      patientsService.getNonSensitivePatientById(id);
+
+    if (patient) response.status(200).send(patient);
+    else response.status(404);
+  }
+);
+
 const newPatientParser = (req: Request, _res: Response, next: NextFunction) => {
   try {
     NewPatientSchema.parse(req.body);
