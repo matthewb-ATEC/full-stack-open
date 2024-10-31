@@ -353,3 +353,18 @@ Start a new vite react project with typescript
 ```bash
 npm create vite@latest my-app-name -- --template react-ts
 ```
+
+## Type Narrowing with Never
+
+Never is a type that is assignable to every type but no type is assignable to it. We can use never to warn us about ypes that are not being handled in switch statements:
+
+```typescript
+const assertNever = (value: never): never => {
+  throw new Error(
+    `Unhandled discriminated union member: ${JSON.stringify(value)}`
+  );
+};
+// ...
+default:
+  return assertNever(part);
+```
