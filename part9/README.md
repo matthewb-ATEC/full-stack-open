@@ -345,3 +345,11 @@ patientsRouter.post(
   }
 );
 ```
+
+## Vite with Typescript
+
+Start a new vite react project with typescript
+
+```bash
+npm create vite@latest my-app-name -- --template react-ts
+```
