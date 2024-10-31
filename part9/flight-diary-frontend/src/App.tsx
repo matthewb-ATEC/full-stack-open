@@ -4,10 +4,15 @@ import { DiaryEntry, NewDiaryEntry } from './types';
 import diaryService from './services/diaryService';
 import DiaryForm from './components/DiaryForm';
 import Notification from './components/Notification';
+import { useDispatch } from 'react-redux';
+import { notifyWithTimeout } from './reducers/notificationReducer';
+import { AppDispatch } from './store';
+import axios from 'axios';
 
 const App = () => {
   const [diaries, setDiaries] = useState<DiaryEntry[]>([]);
-  const [notification, setNotification] = useState<string>('');
+
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     diaryService
@@ -22,23 +27,19 @@ const App = () => {
     try {
       const result = await diaryService.create(newDiary);
       if (result) {
-        diaries.concat(result);
-        setNotification('Diary addded successfully.');
-        setTimeout(() => {
-          setNotification('');
-        }, 5000);
+        setDiaries(diaries.concat(result));
+        dispatch(notifyWithTimeout('Diary added successfully', 5, false));
       }
     } catch (error: unknown) {
       let errorMessage = 'Something bad happened.';
-      if (error instanceof Error) {
-        errorMessage += ' Error: ' + error.message;
+      if (axios.isAxiosError(error)) {
+        const serverMessage =
+          error.response?.data || 'An unknown error occurred';
+        errorMessage = serverMessage;
+      } else if (error instanceof Error) {
+        errorMessage += ' Error: ' + error.message; // Fallback for general errors
       }
-      console.log(errorMessage);
-
-      setNotification('Failed to add diary.');
-      setTimeout(() => {
-        setNotification('');
-      }, 5000);
+      dispatch(notifyWithTimeout(errorMessage, 5, true));
     }
   };
 
@@ -47,7 +48,7 @@ const App = () => {
   return (
     <>
       <h1>Ilari's Flight Diaries</h1>
-      <Notification message={notification} />
+      <Notification />
       <DiaryForm addDiary={addDiary} />
       <Diaries diaries={diaries} />
     </>
