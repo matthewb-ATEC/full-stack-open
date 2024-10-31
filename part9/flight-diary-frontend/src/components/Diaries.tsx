@@ -8,6 +8,7 @@ interface DiariesProps {
 const Diaries = ({ diaries }: DiariesProps) => {
   return (
     <>
+      <h2>Diary entries</h2>
       {diaries.map((diary) => (
         <Diary key={diary.id} diary={diary} />
       ))}
