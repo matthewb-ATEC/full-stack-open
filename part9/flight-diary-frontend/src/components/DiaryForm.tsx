@@ -32,7 +32,7 @@ const DiaryForm = ({ addDiary }: DiaryFormProps) => {
         <div>
           date
           <input
-            type="text"
+            type="date"
             value={date}
             onChange={(event) => {
               setDate(event.target.value);
