@@ -1,0 +1,3 @@
+[submodule "part10/rate-repository"]
+	path = part10/rate-repository
+	url = https://github.com/matthewb-ATEC/rate-repository.git
