@@ -1,3 +1,11 @@
+[submodule "part3/phonebook-backend"]
+	path = part3/phonebook-backend
+	url = https://github.com/matthewb-ATEC/phonebook-backend
+
+[submodule "part9/patientor-frontend"]
+	path = part9/patientor-frontend
+	url = https://github.com/matthewb-ATEC/patientor-frontend
+
 [submodule "part10/rate-repository"]
 	path = part10/rate-repository
-	url = https://github.com/matthewb-ATEC/rate-repository.git
+	url = https://github.com/matthewb-ATEC/rate-repository
