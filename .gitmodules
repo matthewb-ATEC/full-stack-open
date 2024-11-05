@@ -9,3 +9,7 @@
 [submodule "part10/rate-repository"]
 	path = part10/rate-repository
 	url = https://github.com/matthewb-ATEC/rate-repository
+
+[submodule "part11/full-stack-open-pokedex"]
+	path = part11/full-stack-open-pokedex
+	url = https://github.com/matthewb-ATEC/full-stack-open-pokedex
