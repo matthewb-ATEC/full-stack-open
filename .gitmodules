@@ -13,6 +13,7 @@
 [submodule "part11/full-stack-open-pokedex"]
 	path = part11/full-stack-open-pokedex
 	url = https://github.com/matthewb-ATEC/full-stack-open-pokedex
+
 [submodule "part12/containers-application"]
 	path = part12/containers-application
-	url = https://github.com/fullstack-hy2020/part12-containers-applications
+  	url = https://github.com/matthewb-ATEC/containers-applications
