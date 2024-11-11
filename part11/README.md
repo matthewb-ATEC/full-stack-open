@@ -28,3 +28,37 @@ jobs:
         run: |
           echo "Hello World!"
 ```
+
+## Deploying to Fly.io
+
+Generate a token using:
+
+```bash
+fly tokens create deploy -x 999999h
+```
+
+Go to the GitHub repository settings >> secrets and variables >> actions >> new repository secret. Add FLY_API_TOKEN with the value fro the previous command.
+
+### Ensuring Healthly Deployments
+
+Make sure that the status of the new deployment is healthy by adding the following to the fly.toml:
+
+```toml
+[deploy]
+  strategy = "canary"
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  timeout = "5s"
+  path = "/health"
+```
+
+The path of the above http service check points to a simple endpoint on the backend to ensure proper communication:
+
+```javascript
+app.get('/health', (req, res) => {
+  res.send('ok')
+})
+```
