@@ -128,3 +128,11 @@ docker volume ls
 docker volume inspect
 docker volume rm
 ```
+
+## Exec
+
+The exec command can be used to enter a container that is already running.
+
+```bash
+docker exec -it <container_name> bash
+```
