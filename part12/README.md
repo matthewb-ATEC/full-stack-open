@@ -104,3 +104,27 @@ docker build -t <image_name> .
 ```
 
 The period at the end is used to specify the location to look for the Dockerfile
+
+## Docker Compose
+
+Docker compose allows developers to manage container initlization with more detailed instructions than Dockerfiles.
+
+```bash
+docker compose up -d
+```
+
+Or to run a specific file
+
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+## Volumes
+
+Volumes are locations that docker can store data on the host machine that mirrors the contents of the container.
+
+```bash
+docker volume ls
+docker volume inspect
+docker volume rm
+```
