@@ -107,16 +107,46 @@ The period at the end is used to specify the location to look for the Dockerfile
 
 ## Docker Compose
 
-Docker compose allows developers to manage container initlization with more detailed instructions than Dockerfiles.
+Docker compose allows developers to manage container initlization for mutliple services within the same docker network.
+Start services in detached mode (background):
 
 ```bash
 docker compose up -d
 ```
 
-Or to run a specific file
+Run a specific file:
 
 ```bash
-docker compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml up
+```
+
+Stop and remove all containers, networks, and volumes defined in the Compose file:
+
+```bash
+docker compose down
+```
+
+Display logs from all running containers:
+
+```bash
+docker compose logs
+```
+
+A docker-compose.yml file may look like this:
+
+```yml
+version: '3'
+services:
+  web:
+    build: ./web
+    ports:
+      - '5000:5000'
+  db:
+    image: postgres:alpine
+    volumes:
+      - db-data:/var/lib/postgresql/data
+volumes:
+  db-data:
 ```
 
 ## Volumes
@@ -129,10 +159,151 @@ docker volume inspect
 docker volume rm
 ```
 
+In the docker-compose.yml:
+
+```yml
+volumes:
+  - ./local-directory:/container-directory
+```
+
 ## Exec
 
 The exec command can be used to enter a container that is already running.
 
 ```bash
 docker exec -it <container_name> bash
+```
+
+## Reverse Proxy
+
+A type of proxy server that retrieves resources on behalf of a client from one or more servers. These resources are then returned to the client, appearing as if they originated from the reverse proxy server itself.
+
+Options include: Traefik, Caddy, Nginx, and Apache (ordered by initial release from newer to older).
+
+Using Nginx we create a nginx.dev.conf file with the following contents:
+
+```conf
+# events is required, but defaults are ok
+events { }
+
+# A http server, listening at port 80
+http {
+  server {
+    listen 80;
+
+    # Requests starting with root (/) are handled
+    location / {
+      # The following 3 lines are required for the hot loading to work (websocket).
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection 'upgrade';
+
+      # Requests are directed to url below
+      proxy_pass http://app:5173;
+    }
+
+    # Requests starting with root (/api/) are handled
+    location /api/ {
+      # The trailing slash removes the (/api/) when passing the url to the backend, so http://localhost:8080/api/ routes to http://backend:3000/
+      proxy_pass http://backend:3000/;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+  }
+}
+```
+
+Additionally we add a new container to our docker compose file:
+
+```yml
+services:
+  app: // ...
+
+  nginx:
+    image: nginx:1.20.1
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 8080:80
+    container_name: reverse-proxy
+    depends_on:
+      - app # wait for the frontend container to be started
+```
+
+## Docker Networks
+
+By defualt all services created in the same docker-compose.yml file exist on the same network and can interact through their host names and exposed ports. Alternatively you can explicitly define the network in the compose file:
+
+```yml
+networks:
+  my_network:
+    driver: bridge
+```
+
+## Orchestration
+
+Docker compose can be used to initialize many services each in their own container. By executing one docker-compose file at the root of a project, you can initilize services for both the front and back ends assuming they are lcoated in subdirectories. Additionally, we can initialize any other required services including databases, redis, reverse proxies, debugging tools and more. By combining all of these services into a single docker-compose, they can accesss eachother through the shared docker network, however they are not on the same local host. Each container runs on its own local host, but the host name in the url can be substituted with the name of the container to make requests within the same network across different containers. Some services may require an initialization build phase. The steps for the build phase can be stored within the directory associated with the service, and referenced in the build attribute of the service in the root docker-compose. Optionally, we can provide docker-compose files within each service to run them individually, which can be useful when testing. It is recomended to have separate files for development and production.
+
+Recomended file structure:
+
+```bash
+app
+├── frontend
+|   ├── .dockerignore
+|   ├── dev.Dockerfile
+|   └── Dockerfile
+├── backend
+|   ├── .dockerignore
+|   ├── dev.Dockerfile
+|   └── Dockerfile
+├── nginx.dev.conf
+├── docker-compose.dev.yml
+├── nginx.conf
+└── docker-compose.yml
+```
+
+Root docker-compose.yml
+
+```yml
+services:
+  frontend:
+    image: app-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend/:/usr/src/app
+    environment:
+      - VITE_BACKEND_URL=http://localhost:8080/api/
+    container_name: app-frontend
+
+  backend:
+    image: app-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/usr/src/app
+    container_name: app-backend
+
+  // Other services...
+
+  nginx:
+    image: nginx:1.20.1
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 8080:80
+    container_name: reverse-proxy
+    depends_on:
+      - app
+      - backend
+```
+
+Build and run from root directory:
+
+```bash
+docker compose -f docker-compose.yml up --build
 ```

@@ -1,0 +1,38 @@
+services:
+  frontend:
+    image: blogs-frontend-dev
+    build:
+      context: ./frontend
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./frontend:/usr/src/app
+    ports:
+      - 5173:5173
+    depends_on:
+      - backend
+    container_name: blogs-frontend-dev
+
+  backend:
+    image: blogs-backend-dev
+    build:
+      context: ./backend
+      dockerfile: dev.Dockerfile
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/usr/src/app
+
+    ports:
+      - 3000:3000
+    container_name: blogs-backend-dev
+
+  nginx:
+    image: nginx:1.20.1
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 8080:80
+    container_name: reverse-proxy-dev
+    depends_on:
+      - frontend
+      - backend
