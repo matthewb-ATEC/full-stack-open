@@ -10,6 +10,10 @@
 	path = part10/rate-repository
 	url = https://github.com/matthewb-ATEC/rate-repository
 
+[submodule "part10/rate-repository-api"]
+	path = part10/rate-repository-api
+	url = https://github.com/fullstack-hy2020/rate-repository-api
+
 [submodule "part11/full-stack-open-pokedex"]
 	path = part11/full-stack-open-pokedex
 	url = https://github.com/matthewb-ATEC/full-stack-open-pokedex
@@ -17,3 +21,7 @@
 [submodule "part12/containers-application"]
 	path = part12/containers-application
   	url = https://github.com/matthewb-ATEC/containers-applications
+
+[submodule "part13/blog-backend"]
+	path = part13/blog-backend
+	url = https://github.com/matthewb-ATEC/blog-backend
