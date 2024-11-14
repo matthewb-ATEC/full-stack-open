@@ -1,0 +1,24 @@
+services:
+  frontend:
+    image: blogs-frontend-prod
+    build: ./frontend
+    depends_on:
+      - backend
+    container_name: blogs-frontend-prod
+
+  backend:
+    image: blogs-backend-prod
+    build: ./backend
+    env_file: ./backend/.env
+    container_name: blogs-backend-prod
+
+  nginx:
+    image: nginx:1.20.1
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 8080:80
+    container_name: reverse-proxy-prod
+    depends_on:
+      - frontend
+      - backend
