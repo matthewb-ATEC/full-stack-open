@@ -1,14 +1,14 @@
 [submodule "part3/phonebook-backend"]
 	path = part3/phonebook-backend
-	url = https://github.com/matthewb-ATEC/phonebook-backend
+	url = https://github.com/matthewjburton/phonebook-backend
 
 [submodule "part9/patientor-frontend"]
 	path = part9/patientor-frontend
-	url = https://github.com/matthewb-ATEC/patientor-frontend
+	url = https://github.com/matthewjburton/patientor-frontend
 
 [submodule "part10/rate-repository"]
 	path = part10/rate-repository
-	url = https://github.com/matthewb-ATEC/rate-repository
+	url = https://github.com/matthewjburton/rate-repository
 
 [submodule "part10/rate-repository-api"]
 	path = part10/rate-repository-api
@@ -16,12 +16,12 @@
 
 [submodule "part11/full-stack-open-pokedex"]
 	path = part11/full-stack-open-pokedex
-	url = https://github.com/matthewb-ATEC/full-stack-open-pokedex
+	url = https://github.com/matthewjburton/full-stack-open-pokedex
 
 [submodule "part12/containers-application"]
 	path = part12/containers-application
-  	url = https://github.com/matthewb-ATEC/containers-applications
+  	url = https://github.com/matthewjburton/containers-applications
 
 [submodule "part13/blog-backend"]
 	path = part13/blog-backend
-	url = https://github.com/matthewb-ATEC/blog-backend
+	url = https://github.com/matthewjburton/blog-backend
